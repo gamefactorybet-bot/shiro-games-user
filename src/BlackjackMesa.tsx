@@ -270,12 +270,17 @@ function estiloZona(z: { x: number; y: number; escala: number }): CSSProperties 
 function estiloAbanico(i: number, total: number, jugador: boolean): CSSProperties {
   const centro = (total - 1) / 2;
   const distancia = i - centro;
-  const giro = Math.max(-13, Math.min(13, distancia * (jugador ? 4.4 : 3.2)));
-  const caida = Math.abs(distancia) * (jugador ? 3.2 : 2.1);
+  // Con dos cartas evitamos el cruce de bordes que visualmente parecía una
+  // tercera carta. El abanico y el solapamiento crecen recién con manos largas.
+  const pasoGiro = total <= 2 ? 1.8 : total === 3 ? 2.8 : total === 4 ? 3.2 : 3.5;
+  const giro = Math.max(-10, Math.min(10, distancia * pasoGiro * (jugador ? 1 : .78)));
+  const caida = Math.abs(distancia) * (total <= 2 ? .8 : jugador ? 2.1 : 1.4);
+  const margen = total <= 2 ? 2 : total === 3 ? -1 : total === 4 ? -4 : total === 5 ? -7 : -10;
   return {
     '--bj-fan-rot': `${giro}deg`,
     '--bj-fan-y': `${caida}px`,
     '--bj-fan-z': i + 1,
+    '--bj-fan-margen': `${margen}px`,
   } as CSSProperties;
 }
 
@@ -592,9 +597,9 @@ const ESTILOS = `
 }
 .bj-label b{display:grid;place-items:center;min-width:23px;height:23px;border-radius:50%;background:#080807;border:1px solid rgba(228,188,106,.5);color:#fff5d8;font-size:12px;letter-spacing:0}
 .bj-mano{display:flex;justify-content:center;align-items:flex-start;min-height:100px;perspective:720px;transform-style:preserve-3d}
-.bj-pos-carta{position:relative;z-index:var(--bj-fan-z);margin:0 -8px;transform-origin:50% 112%;transition:transform .35s cubic-bezier(.2,.75,.2,1),filter .35s ease}
-.bj-mano.jugador .bj-pos-carta{transform:perspective(520px) translateY(var(--bj-fan-y)) rotateZ(var(--bj-fan-rot)) rotateX(8deg) scale(1.06);filter:drop-shadow(0 13px 9px rgba(0,0,0,.28))}
-.bj-mano.dealer .bj-pos-carta{transform:perspective(650px) translateY(var(--bj-fan-y)) rotateZ(var(--bj-fan-rot)) rotateX(12deg) scale(.9);filter:drop-shadow(0 8px 7px rgba(0,0,0,.24))}
+.bj-pos-carta{position:relative;z-index:var(--bj-fan-z);margin:0 var(--bj-fan-margen,0);transform-origin:50% 112%;transition:transform .35s cubic-bezier(.2,.75,.2,1),filter .35s ease}
+.bj-mano.jugador .bj-pos-carta{transform:perspective(520px) translateY(var(--bj-fan-y)) rotateZ(var(--bj-fan-rot)) rotateX(6deg) scale(1.04);filter:drop-shadow(0 11px 8px rgba(0,0,0,.25))}
+.bj-mano.dealer .bj-pos-carta{transform:perspective(650px) translateY(var(--bj-fan-y)) rotateZ(var(--bj-fan-rot)) rotateX(8deg) scale(.92);filter:drop-shadow(0 7px 6px rgba(0,0,0,.22))}
 .bj-pos-carta .bj-carta,.bj-pos-carta .bj-flip{margin:0}
 .bj-carta{
   width:var(--bj-carta-w);height:var(--bj-carta-h);border-radius:9px;padding:6px;box-sizing:border-box;
