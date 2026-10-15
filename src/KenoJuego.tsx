@@ -36,14 +36,19 @@ export function usePartidaKeno(cfg: KenoCfg, saldoInicial: number, apuestaInicia
     return { ...e, picked: has ? e.picked.filter((x) => x !== n) : [...e.picked, n].sort((a, b) => a - b) };
   }), [cfg.maxMarcar]);
 
-  const onAuto = useCallback(() => setEstado((e) => {
+  const onAuto = useCallback((cantidad = cfg.maxMarcar) => setEstado((e) => {
     if (e.fase !== 'idle') return e;
     const pool: number[] = []; for (let i = 1; i <= cfg.tablero; i++) pool.push(i);
-    return { ...e, picked: shuffle(pool).slice(0, cfg.maxMarcar).sort((a, b) => a - b) };
+    const tope = Math.max(1, Math.min(cfg.maxMarcar, Math.round(cantidad)));
+    return { ...e, picked: shuffle(pool).slice(0, tope).sort((a, b) => a - b) };
   }), [cfg.tablero, cfg.maxMarcar]);
 
   const onLimpiar = useCallback(() => setEstado((e) => (
     e.fase === 'rolling' ? e : { ...e, picked: [], drawn: [], res: null, fase: 'idle', error: null }
+  )), []);
+
+  const onPreparar = useCallback(() => setEstado((e) => (
+    e.fase === 'rolling' ? e : { ...e, drawn: [], res: null, fase: 'idle', error: null }
   )), []);
 
   const jugar = useCallback(async () => {
@@ -75,7 +80,7 @@ export function usePartidaKeno(cfg: KenoCfg, saldoInicial: number, apuestaInicia
     }
   }, [onJugar]);
 
-  return { estado, setApuesta, onToggle, onAuto, onLimpiar, jugar };
+  return { estado, setApuesta, onToggle, onAuto, onLimpiar, onPreparar, jugar };
 }
 
 interface KenoJuegoProps {
@@ -106,6 +111,9 @@ export function KenoJuego({
   fichasEditables, onMoverFicha, onAutoMovido, premioDemo,
 }: KenoJuegoProps) {
   const inicial = fichas.length ? Math.round(fichas[0].valor) : Math.max(minBet, Math.min(maxBet, 1000));
+  const fichasTematicas = useMemo(() => tema.ficha
+    ? fichas.map((f) => (f.imagen_url ? f : { ...f, imagen_url: tema.ficha!, imgTam: 100, tematica: true }))
+    : fichas, [fichas, tema.ficha]);
   const p = usePartidaKeno(cfg, saldoInicial, inicial, onJugar);
   const auto = useAutoplay();
   const jugarRef = useRef<() => void>(() => {});
@@ -141,9 +149,9 @@ export function KenoJuego({
       <KenoMesa escenario={escenario} cfg={cfg} pos={pos} estado={p.estado} tabla={tabla}
         minBet={minBet} maxBet={maxBet} pasoApuesta={paso}
         ocultarApuesta={fichas.length > 0} ocultarCaja={sinCaja}
-        onCambiarApuesta={p.setApuesta} onAuto={p.onAuto} onLimpiar={p.onLimpiar} onJugar={p.jugar} />
+        onCambiarApuesta={p.setApuesta} onAuto={p.onAuto} onLimpiar={p.onLimpiar} onPreparar={p.onPreparar} onJugar={p.jugar} />
       {fichas.length > 0 && (
-        <Fichas host={escenario.el} fichas={fichas} apuesta={p.estado.apuesta}
+        <Fichas host={escenario.el} fichas={fichasTematicas} apuesta={p.estado.apuesta}
           bloqueado={p.estado.fase === 'rolling'}
           editable={fichasEditables}
           onElegir={p.setApuesta}

@@ -2565,12 +2565,31 @@ function SeccionKeno({ juego, onCampo }: {
         </div>
       </div>
 
-      <CardPiel
-        valor={cfg.tema}
-        opciones={TEMAS_KENO.map((t) => ({ id: t.id, nombre: t.nombre, colores: [t.acento] }))}
-        onSet={(id) => guardar({ ...cfg, tema: id })}
-        hint="Fondo, colores y tipografía. Clásico = hereda del panel. El fondo de pantalla propio se sube en Arte. Los controles se ubican en la Vista previa (⚙ Ajustar)."
-      />
+      <div className="card" style={{ marginBottom: 16 }}>
+        <strong style={{ fontSize: 15 }}>Ambiente de Keno</strong>
+        <p className="hint" style={{ marginBottom: 12 }}>
+          Los ambientes premium cambian fondo, tablero, bolas, controles, luces y tipografía. Un fondo subido en Arte tiene prioridad.
+        </p>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(122px,1fr))', gap: 9 }}>
+          {TEMAS_KENO.map((t) => {
+            const activo = cfg.tema === t.id;
+            return (
+              <button key={t.id} type="button" onClick={() => guardar({ ...cfg, tema: t.id })}
+                style={{ position: 'relative', overflow: 'hidden', minHeight: 142, padding: 0, borderRadius: 13,
+                  border: activo ? `2px solid ${t.acento}` : '1px solid var(--border)',
+                  background: t.miniatura ? `center 43%/cover no-repeat url("${t.miniatura}")` : (t.stageBg || 'var(--surface-alt)'),
+                  boxShadow: activo ? `0 0 0 2px color-mix(in srgb,${t.acento} 28%,transparent),0 10px 24px rgba(0,0,0,.25)` : '0 6px 16px rgba(0,0,0,.16)',
+                }}>
+                <span style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg,transparent 34%,rgba(2,5,9,.92) 100%)' }} />
+                {t.premium && <span style={{ position: 'absolute', right: 7, top: 7, padding: '3px 6px', borderRadius: 999, background: 'rgba(4,7,10,.72)', border: `1px solid ${t.acento}`, color: '#fff', fontSize: 7.5, fontWeight: 800, letterSpacing: '.11em' }}>PREMIUM</span>}
+                {t.ficha && <img src={t.ficha} alt="" loading="lazy" style={{ position: 'absolute', right: 7, bottom: 7, width: 34, height: 34, objectFit: 'contain', filter: 'drop-shadow(0 3px 4px #000)' }} />}
+                <span style={{ position: 'absolute', left: 10, right: t.ficha ? 45 : 10, bottom: 9, color: '#fff', textAlign: 'left', fontSize: 11, fontWeight: 800, textShadow: '0 2px 5px #000' }}>{t.nombre}</span>
+              </button>
+            );
+          })}
+        </div>
+        <p className="hint" style={{ margin: '11px 0 0' }}>Los controles se pueden mover desde Vista previa, en ⚙ Ajustar.</p>
+      </div>
     </div>
   );
 }
