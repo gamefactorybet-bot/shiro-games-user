@@ -87,7 +87,7 @@ export function JugarKeno({ datos, saldoInicial, slug, token }: {
         <KenoJuego
           escenario={escRef.current} juego={juego} cfg={cfg} tema={tema} pos={pos}
           fichas={fichas} sinCaja={sinCaja} modoFichas={modoFichas} saldoInicial={Number(saldoInicial)}
-          minBet={minBet} maxBet={maxBet} paso={paso} onJugar={jugar}
+          minBet={minBet} maxBet={maxBet} paso={paso} onJugar={jugar} mostrarAuto={cfg.mostrarAuto}
         />
       )}
       {pantallaMontada && (

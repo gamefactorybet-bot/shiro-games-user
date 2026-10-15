@@ -21,13 +21,15 @@ const ELEMS: { id: ElemId; etiqueta: string }[] = [
 ];
 
 // Panel para ubicar los controles del Keno. Edita `keno_cfg.controles`.
-export function AjusteKenoControles({ juego, escenario, pos, onChange, onElem, onPlanilla }: {
+export function AjusteKenoControles({ juego, escenario, pos, onChange, onElem, onPlanilla, mostrarAuto, onMostrarAuto }: {
   juego: Juego;
   escenario: Escenario;
   pos: PosControlesKeno;
   onChange: (pos: PosControlesKeno) => void;
   onElem?: (id: ElemId) => void;
   onPlanilla?: () => void;
+  mostrarAuto: boolean;
+  onMostrarAuto: (visible: boolean) => void;
 }) {
   const [elem, setElemRaw] = useState<ElemId>('tablero');
   const setElem = (id: ElemId) => { setElemRaw(id); onElem?.(id); };
@@ -39,6 +41,17 @@ export function AjusteKenoControles({ juego, escenario, pos, onChange, onElem, o
     escenario.setMostrarNombre(v);
     await supabase.from('juegos').update({ mostrar_nombre: v }).eq('id', juego.id);
     (juego as { mostrar_nombre?: boolean }).mostrar_nombre = v;
+  };
+
+  const toggleAuto = async (v: boolean) => {
+    onMostrarAuto(v);
+    const { data, error: lectura } = await supabase.from('juegos').select('keno_cfg').eq('id', juego.id).single();
+    if (lectura) { setMsg(lectura.message); onMostrarAuto(!v); return; }
+    const next = { ...((data?.keno_cfg || {}) as Record<string, unknown>), mostrarAuto: v };
+    const { error } = await supabase.from('juegos').update({ keno_cfg: next }).eq('id', juego.id);
+    if (error) { setMsg(error.message); onMostrarAuto(!v); return; }
+    juego.keno_cfg = next;
+    setMsg('Visibilidad guardada ✓');
   };
 
   const esFichas = elem === 'fichas';
@@ -69,6 +82,10 @@ export function AjusteKenoControles({ juego, escenario, pos, onChange, onElem, o
       <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, marginBottom: 12 }}>
         <input type="checkbox" checked={mostrarNombre} onChange={(e) => toggleNombre(e.target.checked)} />
         Mostrar el nombre del juego arriba
+      </label>
+      <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, marginBottom: 12 }}>
+        <input type="checkbox" checked={mostrarAuto} onChange={(e) => void toggleAuto(e.target.checked)} />
+        Mostrar el botón de autojuego
       </label>
 
       <div className="grupo-nav" style={{ marginBottom: 12 }}>

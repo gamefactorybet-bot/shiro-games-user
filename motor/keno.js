@@ -21,6 +21,7 @@ export const CFG_DEFAULT = {
   maxMarcar: 10,      // tope de números que puede marcar el jugador
   riesgo: 'medio',    // 'bajo' | 'medio' | 'alto'
   tema: 'clasico',
+  mostrarAuto: true,
   fondoUrl: null,
   // Ajustes manuales de la tabla: { "<marcados>": { "<aciertos>": mult } }.
   // Lo que no está acá lo genera el motor.
@@ -67,6 +68,7 @@ export function cfgConDefaults(cfg) {
     maxMarcar,
     riesgo,
     tema: str(c.tema, D.tema),
+    mostrarAuto: c.mostrarAuto !== false,
     fondoUrl: str(c.fondoUrl, null),
     pagos,
     // Posición de los controles (solo la usa el frontend; se pasa tal cual).

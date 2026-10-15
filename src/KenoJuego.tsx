@@ -103,12 +103,14 @@ interface KenoJuegoProps {
   /** Preview: arrastrar Auto y refrescar al moverlo desde el panel. */
   onAutoMovido?: () => void;
   premioDemo?: number | null;
+  mostrarAuto?: boolean;
 }
 
 // El juego completo montado sobre el escenario: tablero + mesa + fichas.
 export function KenoJuego({
   escenario, juego, cfg, tema, pos, fichas, sinCaja, modoFichas, saldoInicial, minBet, maxBet, paso, onJugar,
   fichasEditables, onMoverFicha, onAutoMovido, premioDemo,
+  mostrarAuto = cfg.mostrarAuto,
 }: KenoJuegoProps) {
   const inicial = fichas.length ? Math.round(fichas[0].valor) : Math.max(minBet, Math.min(maxBet, 1000));
   const fichasTematicas = useMemo(() => tema.ficha
@@ -138,14 +140,16 @@ export function KenoJuego({
     <>
       <KenoTablero escenario={escenario} juego={juego} cfg={cfg} tema={tema} pos={pos}
         estado={p.estado} onToggle={p.onToggle} premioDemo={premioDemo} />
-      <BotonAuto
-        host={escenario.el}
-        {...propsAuto(escenario.planilla, { x: pos.boton.x, y: pos.boton.y, tam: pos.boton.ancho })}
-        restantes={auto.restantes} activo={auto.activo}
-        onMover={onAutoMovido ? (x, y) => { escenario.setAutoPos(x, y); onAutoMovido(); } : undefined}
-        disabled={p.estado.fase === 'rolling' || !p.estado.picked.length || p.estado.saldo < p.estado.apuesta}
-        onStart={(n) => auto.start(n, () => jugarRef.current())} onStop={auto.stop}
-      />
+      {mostrarAuto && (
+        <BotonAuto
+          host={escenario.el}
+          {...propsAuto(escenario.planilla, { x: pos.boton.x, y: pos.boton.y, tam: pos.boton.ancho })}
+          restantes={auto.restantes} activo={auto.activo}
+          onMover={onAutoMovido ? (x, y) => { escenario.setAutoPos(x, y); onAutoMovido(); } : undefined}
+          disabled={p.estado.fase === 'rolling' || !p.estado.picked.length || p.estado.saldo < p.estado.apuesta}
+          onStart={(n) => auto.start(n, () => jugarRef.current())} onStop={auto.stop}
+        />
+      )}
       <KenoMesa escenario={escenario} cfg={cfg} pos={pos} estado={p.estado} tabla={tabla}
         minBet={minBet} maxBet={maxBet} pasoApuesta={paso}
         ocultarApuesta={fichas.length > 0} ocultarCaja={sinCaja}

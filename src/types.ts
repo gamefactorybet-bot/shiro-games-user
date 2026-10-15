@@ -794,6 +794,8 @@ export interface KenoCfg {
   maxMarcar: number;
   riesgo: 'bajo' | 'medio' | 'alto';
   tema: string;
+  /** Permite ocultar el botón de autojuego sin afectar el sorteo manual. */
+  mostrarAuto: boolean;
   fondoUrl: string | null;
   /** Ajustes manuales de la tabla: { [marcados]: { [aciertos]: mult } }. */
   pagos: Record<string, Record<string, number>>;

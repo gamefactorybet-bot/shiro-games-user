@@ -36,6 +36,7 @@ export function PreviewKeno({ juego, onClose }: { juego: Juego; onClose: () => v
   const [ajusteElem, setAjusteElem] = useState('tablero');
   const [fichas, setFichas] = useState<Ficha[]>(() => fichasConDefaults(juego.fichas_cfg).fichas);
   const [planillaRev, setPlanillaRev] = useState(0);
+  const [mostrarAuto, setMostrarAuto] = useState(cfg.mostrarAuto);
   const sinCaja = fichas.length > 0 && !!fichasConDefaults(juego.fichas_cfg).sinCaja;
   const modoFichas = fichasConDefaults(juego.fichas_cfg).modo;
   const guardarFichas = (fs: Ficha[]) => {
@@ -93,6 +94,7 @@ export function PreviewKeno({ juego, onClose }: { juego: Juego; onClose: () => v
           escenario={escRef.current} juego={juego} cfg={cfg} tema={tema} pos={posCtl}
           fichas={fichas} sinCaja={sinCaja} modoFichas={modoFichas} saldoInicial={SALDO_DEMO}
           minBet={minBet} maxBet={maxBet} paso={paso} onJugar={jugarLocal}
+          mostrarAuto={mostrarAuto}
           fichasEditables={mostrarPanel && tab === 'controles' && ajusteElem === 'fichas'}
           onMoverFicha={(i, x, y) => guardarFichas(fichas.map((f, k) => (k === i ? { ...f, x, y } : f)))}
           onAutoMovido={() => setPlanillaRev((n) => n + 1)}
@@ -108,7 +110,8 @@ export function PreviewKeno({ juego, onClose }: { juego: Juego; onClose: () => v
           </div>
           {tab === 'arte'
             ? <AjustePanel escenario={escRef.current} juego={juego} simbolos={[]} onGrillaCambio={() => {}} categorias={['capas', 'extras']} esMines />
-            : <AjusteKenoControles juego={juego} escenario={escRef.current} pos={posCtl} onChange={setPosCtl} onElem={setAjusteElem} onPlanilla={() => setPlanillaRev((n) => n + 1)} />}
+            : <AjusteKenoControles juego={juego} escenario={escRef.current} pos={posCtl} onChange={setPosCtl} onElem={setAjusteElem}
+                mostrarAuto={mostrarAuto} onMostrarAuto={setMostrarAuto} onPlanilla={() => setPlanillaRev((n) => n + 1)} />}
         </div>
       )}
     </div>

@@ -35,12 +35,15 @@ export function KenoTablero({ escenario, juego, cfg, tema, pos, estado, onToggle
     cargarFuenteKeno(tema);
     const el = escenario.el;
     const prevBg = el.style.background;
+    el.classList.add('kn-stage');
+    el.classList.toggle('kn-stage-premium', !!tema.premium);
     if (tema.stageBg && !fondoPantalla) el.style.background = tema.stageBg;
     const claves = Object.keys(tema.vars);
     for (const k of claves) el.style.setProperty(k, tema.vars[k]);
     if (tema.font) el.style.setProperty('--kn-body', tema.font.family);
     return () => {
       el.style.background = prevBg;
+      el.classList.remove('kn-stage', 'kn-stage-premium');
       for (const k of claves) el.style.removeProperty(k);
       el.style.removeProperty('--kn-body');
     };
@@ -127,6 +130,17 @@ export function KenoTablero({ escenario, juego, cfg, tema, pos, estado, onToggle
         @keyframes kn-numero-revela{0%{transform:scale(.65);filter:brightness(2)}100%{transform:scale(1);filter:brightness(1)}}
         .kn-host.premium .kn-board-shell{border-color:color-mix(in srgb,var(--kn-frame) 72%,transparent);box-shadow:0 22px 55px rgba(0,0,0,.48),0 0 22px var(--kn-glow),inset 0 1px rgba(255,255,255,.1)}
         .kn-host.premium .kn-board-head strong{text-shadow:0 0 12px var(--kn-glow)}
+        .kn-stage .vol{gap:calc(4px * var(--vol-s));padding:calc(3px * var(--vol-s)) calc(5px * var(--vol-s)) calc(3px * var(--vol-s)) calc(8px * var(--vol-s));
+          color:var(--text,#fff);background:var(--kn-panel,rgba(7,10,18,.78));border:1px solid color-mix(in srgb,var(--kn-frame,var(--accent)) 46%,transparent);
+          box-shadow:0 6px 16px rgba(0,0,0,.3),inset 0 1px rgba(255,255,255,.08);backdrop-filter:blur(9px)}
+        .kn-stage .vol button{width:calc(27px * var(--vol-s));height:calc(27px * var(--vol-s));color:var(--accent,#fff)}
+        .kn-stage .vol svg{width:calc(15px * var(--vol-s));height:calc(15px * var(--vol-s))}
+        .kn-stage .vol input[type="range"]{-webkit-appearance:none;appearance:none;width:calc(70px * var(--vol-s));height:calc(20px * var(--vol-s));accent-color:var(--accent);outline:0}
+        .kn-stage .vol input[type="range"]::-webkit-slider-runnable-track{height:calc(4px * var(--vol-s));border-radius:999px;background:color-mix(in srgb,var(--kn-frame,var(--accent)) 28%,rgba(255,255,255,.13));box-shadow:inset 0 1px 2px rgba(0,0,0,.4)}
+        .kn-stage .vol input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:calc(13px * var(--vol-s));height:calc(13px * var(--vol-s));margin-top:calc(-4.5px * var(--vol-s));border:1px solid color-mix(in srgb,var(--accent) 65%,#fff);border-radius:50%;background:var(--accent);box-shadow:0 0 8px var(--kn-glow,var(--accent-soft))}
+        .kn-stage .vol input[type="range"]::-moz-range-track{height:calc(4px * var(--vol-s));border:0;border-radius:999px;background:color-mix(in srgb,var(--kn-frame,var(--accent)) 28%,rgba(255,255,255,.13))}
+        .kn-stage .vol input[type="range"]::-moz-range-thumb{width:calc(13px * var(--vol-s));height:calc(13px * var(--vol-s));border:1px solid color-mix(in srgb,var(--accent) 65%,#fff);border-radius:50%;background:var(--accent);box-shadow:0 0 8px var(--kn-glow,var(--accent-soft))}
+        .kn-stage-premium .vol{border-color:color-mix(in srgb,var(--kn-frame) 62%,transparent);box-shadow:0 7px 18px rgba(0,0,0,.32),0 0 10px color-mix(in srgb,var(--kn-glow) 48%,transparent),inset 0 1px rgba(255,255,255,.08)}
         @media (prefers-reduced-motion: reduce){ .kn-premio-in,.kn-cell.drawn{ animation:none } }
       `}</style>
 
