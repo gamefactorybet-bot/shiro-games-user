@@ -13,3 +13,4 @@ export const PreviewDice = lazy(() => import('./Dice.tsx').then((m) => ({ defaul
 export const PreviewKeno = lazy(() => import('./Keno.tsx').then((m) => ({ default: m.PreviewKeno })));
 export const PreviewSieteUd = lazy(() => import('./SieteUd.tsx').then((m) => ({ default: m.PreviewSieteUd })));
 export const PreviewTorre = lazy(() => import('./Torre.tsx').then((m) => ({ default: m.PreviewTorre })));
+export const PreviewBlackjack = lazy(() => import('./PreviewBlackjack.tsx').then((m) => ({ default: m.PreviewBlackjack })));

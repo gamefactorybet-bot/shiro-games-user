@@ -15,7 +15,7 @@ import { nombreProveedor } from './marca.ts';
 import {
   Preview, PreviewMines, PreviewRuleta, PreviewRuletaBotones,
   PreviewCrash, PreviewPlinko, PreviewRaspadita, PreviewLimbo,
-  PreviewDice, PreviewKeno, PreviewSieteUd, PreviewTorre,
+  PreviewDice, PreviewKeno, PreviewSieteUd, PreviewTorre, PreviewBlackjack,
 } from './previews-lazy.tsx';
 import { simularMines } from '../motor/mines-clasico.js';
 import {
@@ -940,7 +940,9 @@ export function Editor({ juego: juegoProp, onCambio }: EditorProps) {
                               ? <PreviewSieteUd juego={juego} onClose={() => setPreviewAbierto(false)} onGuardarCfg={guardarSieteUdCfg} onGuardarJuego={guardarCamposJuego} />
                               : esTorre
                                 ? <PreviewTorre juego={juego} onClose={() => setPreviewAbierto(false)} />
-                                : <Preview juego={juego} simbolos={simbolos} sonidos={sonidos} efectos={efectos} onClose={() => setPreviewAbierto(false)} />}
+                                : esBlackjack
+                                  ? <PreviewBlackjack juego={juego} onClose={() => setPreviewAbierto(false)} />
+                                  : <Preview juego={juego} simbolos={simbolos} sonidos={sonidos} efectos={efectos} onClose={() => setPreviewAbierto(false)} />}
         </Suspense>
       )}
     </>
