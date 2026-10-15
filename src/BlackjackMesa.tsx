@@ -318,7 +318,6 @@ export function MesaBlackjack({
         <i className="bj-esquina b" />
         <i className="bj-esquina c" />
         <i className="bj-esquina d" />
-        <span className="bj-pozo" />
         <div className="bj-reglas" aria-hidden>
           <span>BLACKJACK PAGA 3 A 2</span><i>•</i><span>CRUPIER SE PLANTA EN 17</span>
         </div>
@@ -514,11 +513,6 @@ const ESTILOS = `
   border:1px solid var(--bj-oro-suave);
   box-shadow:inset 0 0 50px rgba(0,0,0,.35);
 }
-.bj-pozo{
-  pointer-events:none;position:absolute;left:50%;top:48%;width:190px;height:78px;
-  transform:translate(-50%,-50%);border-radius:50%;
-  box-shadow:inset 0 0 0 1px var(--bj-oro-suave), inset 0 18px 30px rgba(0,0,0,.35);
-}
 .bj-esquina{
   pointer-events:none;position:absolute;width:9px;height:9px;border:1px solid var(--bj-oro);opacity:.7;
   transform:rotate(45deg);box-shadow:0 0 8px rgba(0,0,0,.6);
@@ -653,7 +647,6 @@ const ESTILOS = `
 .bj-error{color:#ffb4b4;text-align:center;margin:0;width:100%}
 @media(max-width:600px){
   .bj-pano{border-width:10px}
-  .bj-pozo{width:130px;height:54px}
   .bj-reglas{font-size:7px;gap:7px;letter-spacing:.12em}
   .bj-bottom{width:min(94vw,420px);gap:8px}.bj-bottom button{min-width:100px;padding:11px 15px}
   .bj-vineta{box-shadow:inset 0 0 80px rgba(0,0,0,.48)}

@@ -982,6 +982,8 @@ export interface BlackjackCfg {
   sonido: boolean;
   movimiento: 'cinematico' | 'rapido' | 'reducido';
   ambiente: number;
+  /** false oculta la marca y el nombre en la mesa real, no solo en la previa. */
+  mostrarNombre: boolean;
   /** Una sola imagen para el dorso de todas las cartas. Vacío = dibujo. */
   reversoUrl: string | null;
   /** Cara opcional por carta. Clave `A♠`, `10♥`, etc. */

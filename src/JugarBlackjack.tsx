@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from 'react';
 import { fetchJson } from './juego/recursos.ts';
-import { cfgBlackjack } from './juego/blackjack.ts';
+import { cfgBlackjack, nombreEnMesa } from './juego/blackjack.ts';
 import { sonidoBlackjack } from './juego/blackjack-audio.ts';
 import { fichasDe, fichasSinCajaDe } from '../motor/fichas.js';
 import { FichasEnMesa, MesaBlackjack, type CartaBj } from './BlackjackMesa.tsx';
@@ -80,7 +80,7 @@ export function JugarBlackjack({ datos, saldoInicial, slug, token }: { datos: Da
       mesa={piel.mesa}
       movimiento={piel.movimiento}
       ambiente={piel.ambiente}
-      mostrarNombre={(juego.mostrar_nombre ?? true) !== false}
+      mostrarNombre={nombreEnMesa(juego)}
       error={error}
       acciones={activa ? (
         <>

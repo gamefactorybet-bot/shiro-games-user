@@ -2,6 +2,7 @@ import './styles.css';
 import { lazy, Suspense, useEffect, useState, type ComponentType } from 'react';
 import { createRoot } from 'react-dom/client';
 import { fetchJson } from './juego/recursos.ts';
+import { nombreEnMesa } from './juego/blackjack.ts';
 import { caraDe } from './dominio.ts';
 import { PantallaCarga } from './PantallaCarga.tsx';
 import type { DatosJuego } from './types.ts';
@@ -179,7 +180,16 @@ function Jugar() {
             fetchJson<{ saldo: number }>(`/api/jugar-balance?token=${encodeURIComponent(token)}`),
           ]);
           if (!cancelado) {
-            mostrarNombre(slug, token, String(datos.juego.nombre || ''));
+            const titulo = String(datos.juego.nombre || '');
+            if (datos.juego.motor?.startsWith('blackjack') && !nombreEnMesa(datos.juego)) {
+              document.title = 'Jugar';
+              try {
+                sessionStorage.setItem(SESION_KEY, JSON.stringify({ slug, token, nombre: '' }));
+              } catch { /* sin storage */ }
+              publicarBarra(slug);
+            } else {
+              mostrarNombre(slug, token, titulo);
+            }
             setEstado({ fase: 'listo', datos, saldo: Number(balance.saldo), slug, token });
           }
         } catch (err) {

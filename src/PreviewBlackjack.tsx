@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import {
   crearMazo, esBlackjack, jugarDealer, resolver, sacar, valor,
 } from '../motor/blackjack.js';
-import { cfgBlackjack } from './juego/blackjack.ts';
+import { cfgBlackjack, nombreEnMesa } from './juego/blackjack.ts';
 import { sonidoBlackjack } from './juego/blackjack-audio.ts';
 import { fichasDe, fichasSinCajaDe, parcheFichas } from '../motor/fichas.js';
 import { supabase } from './supabase.ts';
@@ -37,7 +37,7 @@ export function PreviewBlackjack({ juego, onClose, onMesa, onMostrarNombre }: {
 }) {
   const cfg = useMemo(() => cfgBlackjack(juego.blackjack_cfg), [juego]);
   const [mesa, setMesa] = useState<DisenoBlackjack>(() => cfgBlackjack(juego.blackjack_cfg).mesa);
-  const nombreEnJuego = (juego.mostrar_nombre ?? true) !== false;
+  const nombreEnJuego = nombreEnMesa(juego);
   const [mostrarNombre, setMostrarNombre] = useState(nombreEnJuego);
   const [nombreVisto, setNombreVisto] = useState(nombreEnJuego);
   if (nombreEnJuego !== nombreVisto) {

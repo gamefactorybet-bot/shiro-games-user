@@ -20,7 +20,7 @@ export const TEMAS_BLACKJACK: { id: TemaBlackjack; nombre: string; subtitulo: st
 // Las dos escriben `blackjack_cfg` entero: si se cruzan, una pisa a la otra.
 const colasBlackjack = new Map<string, Promise<void>>();
 
-export function encolarBlackjack(juegoId: string, tarea: () => Promise<void>): Promise<void> {
+export function encolarBlackjack<T>(juegoId: string, tarea: () => Promise<T>): Promise<T> {
   const previa = colasBlackjack.get(juegoId) ?? Promise.resolve();
   const tanda = previa.then(tarea, tarea);
   colasBlackjack.set(juegoId, tanda.then(() => undefined, () => undefined));
@@ -41,4 +41,11 @@ export function claveCarta(rango: string, palo: string): string {
 
 export function cfgBlackjack(raw: Partial<BlackjackCfg> | null | undefined): BlackjackCfg {
   return cfgConDefaults(raw || {}) as BlackjackCfg;
+}
+
+/** La previa mira la columna. La partida real también mira blackjack_cfg,
+ *  porque un guardado de la columna puede no existir en la base. */
+export function nombreEnMesa(juego: { mostrar_nombre?: unknown; blackjack_cfg?: unknown }): boolean {
+  if (juego.mostrar_nombre === false) return false;
+  return cfgBlackjack(juego.blackjack_cfg as Partial<BlackjackCfg> | null).mostrarNombre !== false;
 }

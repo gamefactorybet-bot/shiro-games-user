@@ -8,6 +8,7 @@ export const CFG_DEFAULT = {
   sonido: true,
   movimiento: 'cinematico',
   ambiente: 80,
+  mostrarNombre: true,
 };
 
 /** Dónde vive cada pieza de la mesa y qué tamaño tiene. % de la pantalla. */
@@ -91,6 +92,7 @@ export function cfgConDefaults(cfg) {
     sonido: c.sonido !== false,
     movimiento: ['cinematico', 'rapido', 'reducido'].includes(c.movimiento) ? c.movimiento : CFG_DEFAULT.movimiento,
     ambiente: clamp(Math.round(num(c.ambiente, CFG_DEFAULT.ambiente)), 0, 100),
+    mostrarNombre: c.mostrarNombre !== false,
     reversoUrl: reverso || null,
     cartas: cartasDe(c.cartas),
     mesa: mesaDe(c.mesa),

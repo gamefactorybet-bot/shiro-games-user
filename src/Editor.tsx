@@ -39,7 +39,7 @@ import { cfgConDefaults as cfgLimboRaw, rtpDe as rtpLimboDe } from '../motor/lim
 import { cfgConDefaults as cfgDiceRaw, rtpDe as rtpDiceDe } from '../motor/dice.js';
 import { cfgDe as cfgKenoDe } from './juego/keno.ts';
 import { cfgDe as cfgTorreDe } from './juego/torre.ts';
-import { cfgBlackjack, claveCarta, encolarBlackjack, PALOS_BJ, RANGOS_BJ, TEMAS_BLACKJACK } from './juego/blackjack.ts';
+import { cfgBlackjack, claveCarta, encolarBlackjack, nombreEnMesa, PALOS_BJ, RANGOS_BJ, TEMAS_BLACKJACK } from './juego/blackjack.ts';
 import { rtpDe as rtpSieteUdDe } from '../motor/sieteud.js';
 import { rtpDe as rtpKenoDe, rtpTabla as rtpKenoTabla, tablaBase as tablaKenoBase } from '../motor/keno.js';
 import { rtpDe as rtpTorreDe, multBase as multTorreBase, rtpPiso as rtpTorrePiso, chanceZafar as chanceTorre } from '../motor/torre.js';
@@ -57,6 +57,24 @@ import type {
 } from './types.ts';
 
 const cfgLimboDe = (juego: Juego): LimboCfg => cfgLimboRaw(juego.limbo_cfg) as LimboCfg;
+
+// La columna mostrar_nombre puede no existir en la base. El cfg sí viaja
+// a la cara de jugador, así que el ocultar queda ahí. Se guardan por
+// separado: si la columna falla, no se pierde el cfg.
+function persistirNombreBlackjack(juego: Juego, visible: boolean): Promise<BlackjackCfg> {
+  juego.mostrar_nombre = visible;
+  return encolarBlackjack(juego.id, async () => {
+    const { data, error: lectura } = await supabase.from('juegos').select('blackjack_cfg').eq('id', juego.id).single();
+    if (lectura) throw lectura;
+    const salida = { ...cfgBlackjack(data?.blackjack_cfg), mostrarNombre: visible };
+    const guardado = await supabase.from('juegos').update({ blackjack_cfg: salida }).eq('id', juego.id);
+    if (guardado.error) throw guardado.error;
+    await supabase.from('juegos').update({ mostrar_nombre: visible }).eq('id', juego.id);
+    juego.blackjack_cfg = salida;
+    juego.mostrar_nombre = visible;
+    return salida;
+  });
+}
 const cfgDiceDe = (juego: Juego): DiceCfg => cfgDiceRaw(juego.dice_cfg) as DiceCfg;
 
 const COLORES = ['#f87171', '#fbbf24', '#facc15', '#4ade80', '#38bdf8', '#a78bfa', '#f472b6', '#94a3b8'];
@@ -948,8 +966,10 @@ export function Editor({ juego: juegoProp, onCambio }: EditorProps) {
                                     onMesa={(cfg) => { setJuego((j) => ({ ...j, blackjack_cfg: cfg as Juego['blackjack_cfg'] })); marcarGuardado(); }}
                                     onMostrarNombre={(v) => {
                                       setJuego((j) => ({ ...j, mostrar_nombre: v }));
-                                      void supabase.from('juegos').update({ mostrar_nombre: v }).eq('id', juego.id);
-                                      marcarGuardado();
+                                      void persistirNombreBlackjack(juego, v).then((salida) => {
+                                        setJuego((j) => ({ ...j, mostrar_nombre: v, blackjack_cfg: salida }));
+                                        marcarGuardado();
+                                      });
                                     }}
                                   />
                                   : <Preview juego={juego} simbolos={simbolos} sonidos={sonidos} efectos={efectos} onClose={() => setPreviewAbierto(false)} />}
@@ -2584,9 +2604,10 @@ function SeccionBlackjack({ juego, onCampo }: {
     void encolarBlackjack(juego.id, async () => {
       let mesa = cfgBlackjack(juego.blackjack_cfg).mesa;
       const { data, error } = await supabase.from('juegos').select('blackjack_cfg').eq('id', juego.id).single();
-      if (!error) mesa = cfgBlackjack(data?.blackjack_cfg).mesa;
+      const leido = cfgBlackjack(!error && data ? data.blackjack_cfg : juego.blackjack_cfg);
+      if (!error) mesa = leido.mesa;
       if (temaEditado) mesa = { ...mesa, tema };
-      const salida = { ...next, mesa };
+      const salida = { ...next, mesa, mostrarNombre: leido.mostrarNombre };
       juego.blackjack_cfg = salida;
       setCfg((prev) => ({ ...prev, mesa }));
       await onCampo('blackjack_cfg', salida);
@@ -2611,8 +2632,13 @@ function SeccionBlackjack({ juego, onCampo }: {
       return completo;
     });
   };
+  useEffect(() => {
+    if (juego.mostrar_nombre !== false) return;
+    if (cfgBlackjack(juego.blackjack_cfg).mostrarNombre === false) return;
+    void persistirNombreBlackjack(juego, false);
+  }, [juego.id]);
   const cargadas = Object.keys(cfg.cartas || {}).length;
-  const nombreEnJuego = (juego.mostrar_nombre ?? true) !== false;
+  const nombreEnJuego = nombreEnMesa(juego);
   const [mostrarNombre, setMostrarNombre] = useState(nombreEnJuego);
   const [nombreVisto, setNombreVisto] = useState(nombreEnJuego);
   if (nombreEnJuego !== nombreVisto) {
@@ -2622,8 +2648,9 @@ function SeccionBlackjack({ juego, onCampo }: {
   const cambiarNombre = (v: boolean) => {
     setMostrarNombre(v);
     setNombreVisto(v);
+    setCfg((prev) => ({ ...prev, mostrarNombre: v }));
     juego.mostrar_nombre = v;
-    onCampo('mostrar_nombre', v);
+    void persistirNombreBlackjack(juego, v).then(() => onCampo('mostrar_nombre', v));
   };
 
   const ponerReverso = async (file: File) => {
