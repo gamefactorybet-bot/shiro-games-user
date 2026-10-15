@@ -1,21 +1,88 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { fetchJson } from './juego/recursos.ts';
+import { cfgBlackjack } from './juego/blackjack.ts';
+import { MesaBlackjack, type CartaBj } from './BlackjackMesa.tsx';
 import type { DatosJuego } from './types.ts';
 
-type Carta = { rango: string; palo: string } | null;
-type Partida = { roundId: string; estado: 'en_curso' | 'gano' | 'perdio' | 'empate'; apuesta: number; jugador: Carta[]; dealer: Carta[]; valorJugador: number; valorDealer: number | null; puedeDoblar: boolean; ganancia: number | null; saldo?: number | null };
+type Partida = {
+  roundId: string;
+  estado: 'en_curso' | 'gano' | 'perdio' | 'empate';
+  apuesta: number;
+  jugador: CartaBj[];
+  dealer: CartaBj[];
+  valorJugador: number;
+  valorDealer: number | null;
+  puedeDoblar: boolean;
+  ganancia: number | null;
+  saldo?: number | null;
+};
+
 const dinero = (n: number) => new Intl.NumberFormat('es-PY', { maximumFractionDigits: 0 }).format(Math.round(n));
-const roja = (palo?: string) => palo === '♥' || palo === '♦';
-function CartaVista({ carta, oculta = false }: { carta: Carta; oculta?: boolean }) {
-  if (oculta || !carta) return <div className="bj-carta bj-oculta">SHIRO</div>;
-  return <div className={`bj-carta ${roja(carta.palo) ? 'roja' : ''}`}><b>{carta.rango}</b><span>{carta.palo}</span></div>;
-}
+
 export function JugarBlackjack({ datos, saldoInicial, slug, token }: { datos: DatosJuego; saldoInicial: number; slug: string; token: string }) {
-  const juego = datos.juego; const [saldo, setSaldo] = useState(saldoInicial); const [apuesta, setApuesta] = useState(Math.max(Number(juego.min_bet) || 1000, Number(juego.paso_apuesta) || 1000));
-  const [partida, setPartida] = useState<Partida | null>(null); const [cargando, setCargando] = useState(false); const [error, setError] = useState('');
-  const llamar = useCallback(async (body: Record<string, unknown>) => { setCargando(true); setError(''); try { const r = await fetchJson<Partida>('/api/blackjack', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token, slug, ...body }) }); setPartida(r); if (Number.isFinite(Number(r.saldo))) setSaldo(Number(r.saldo)); } catch (e) { setError((e as Error).message || 'No se pudo resolver la mano.'); } finally { setCargando(false); } }, [slug, token]);
-  const iniciar = () => llamar({ accion: 'iniciar', apuesta, clientId: crypto.randomUUID() }); const accion = (a: 'pedir' | 'plantar' | 'doblar') => partida && llamar({ accion: a, roundId: partida.roundId }); const activa = partida?.estado === 'en_curso';
-  const mensaje = partida && !activa ? (partida.estado === 'gano' ? `Ganaste ${dinero(partida.ganancia || 0)}` : partida.estado === 'empate' ? 'Empate: recuperás tu apuesta' : 'La casa gana esta mano') : '';
-  return <main className="blackjack"><style>{`.blackjack{min-height:100vh;box-sizing:border-box;padding:24px;background:radial-gradient(circle at 50% 10%,#246346,#081b17 65%);color:#fff;font-family:Inter,system-ui,sans-serif;display:grid;grid-template-rows:auto 1fr auto;gap:18px}.bj-top,.bj-bottom{max-width:980px;width:100%;margin:auto;display:flex;align-items:center;justify-content:space-between;gap:12px}.bj-brand{font-weight:900;letter-spacing:.13em;color:#e7bf67}.bj-saldo{background:#08140f99;padding:10px 15px;border-radius:10px;font-weight:700}.bj-mesa{max-width:980px;width:100%;margin:auto;border:10px solid #5b351e;border-radius:48% 48% 16px 16px;background:linear-gradient(135deg,#1c7651,#0d422f);box-shadow:inset 0 0 0 3px #d7a94d,inset 0 0 50px #03140d;min-height:480px;text-align:center;display:flex;flex-direction:column;justify-content:space-around;padding:30px;box-sizing:border-box}.bj-label{font-size:12px;letter-spacing:.15em;color:#d9c188;margin-bottom:12px}.bj-mano{display:flex;justify-content:center;gap:10px;min-height:116px}.bj-carta{width:75px;height:106px;border-radius:8px;background:#f8f2e6;color:#1c1c1c;padding:9px;box-sizing:border-box;text-align:left;box-shadow:0 4px 9px #0006;display:flex;flex-direction:column;font-family:Georgia,serif;font-size:20px}.bj-carta span{font-size:29px;line-height:1}.bj-carta.roja{color:#b51b28}.bj-oculta{background:repeating-linear-gradient(45deg,#153b78 0 6px,#e3d4ac 6px 9px);color:#f5df99;align-items:center;justify-content:center;font-size:11px;letter-spacing:.12em}.bj-resultado{min-height:25px;font-weight:800;color:#ffe193}.bj-bottom{justify-content:center;flex-wrap:wrap}.bj-apuesta{display:flex;align-items:center;gap:8px;background:#07140ecc;padding:8px 12px;border-radius:10px}.bj-apuesta input{width:110px;background:transparent;color:white;border:0;font-weight:bold;font-size:16px}.blackjack button{border:0;border-radius:9px;background:#d7a94d;color:#211506;padding:12px 20px;font-weight:800;cursor:pointer}.blackjack button.sec{background:#efe0b7}.blackjack button:disabled{opacity:.45;cursor:not-allowed}.bj-error{color:#ffc0c0;text-align:center;margin:0}@media(max-width:600px){.blackjack{padding:14px}.bj-mesa{border-radius:26px;min-height:430px;padding:20px 8px}.bj-carta{width:62px;height:90px}.bj-bottom{gap:7px}.blackjack button{padding:11px 13px}}`}</style>
-    <header className="bj-top"><div><div className="bj-brand">SHIRO GAMES</div><strong>{juego.nombre}</strong></div><div className="bj-saldo">Saldo: {dinero(saldo)}</div></header><section className="bj-mesa"><div><div className="bj-label">CRUPIER {partida?.valorDealer != null ? `· ${partida.valorDealer}` : ''}</div><div className="bj-mano">{partida ? partida.dealer.map((c, i) => <CartaVista key={i} carta={c} oculta={!c} />) : <CartaVista carta={null} oculta />}</div></div><div className="bj-resultado">{mensaje || (activa ? `Tu mano: ${partida?.valorJugador}` : 'Hacé tu apuesta para repartir')}</div><div><div className="bj-label">JUGADOR {partida ? `· ${partida.valorJugador}` : ''}</div><div className="bj-mano">{partida?.jugador.map((c, i) => <CartaVista key={i} carta={c} />)}</div></div></section><footer className="bj-bottom">{!activa && <><label className="bj-apuesta">Apuesta <input type="number" min={juego.min_bet} max={juego.max_bet} step={juego.paso_apuesta || 100} value={apuesta} onChange={(e) => setApuesta(Number(e.target.value))} /></label><button disabled={cargando} onClick={iniciar}>{cargando ? 'Repartiendo…' : 'Repartir'}</button></>}{activa && <><button className="sec" disabled={cargando} onClick={() => accion('pedir')}>Pedir</button><button disabled={cargando} onClick={() => accion('plantar')}>Plantarse</button>{partida?.puedeDoblar && <button className="sec" disabled={cargando || saldo < partida.apuesta} onClick={() => accion('doblar')}>Doblar</button>}</>}{error && <p className="bj-error">{error}</p>}</footer></main>;
+  const juego = datos.juego;
+  const piel = useMemo(() => cfgBlackjack(juego.blackjack_cfg), [juego]);
+  const [saldo, setSaldo] = useState(saldoInicial);
+  const [apuesta, setApuesta] = useState(Math.max(Number(juego.min_bet) || 1000, Number(juego.paso_apuesta) || 1000));
+  const [partida, setPartida] = useState<Partida | null>(null);
+  const [cargando, setCargando] = useState(false);
+  const [error, setError] = useState('');
+
+  const llamar = useCallback(async (body: Record<string, unknown>) => {
+    setCargando(true);
+    setError('');
+    try {
+      const r = await fetchJson<Partida>('/api/blackjack', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token, slug, ...body }),
+      });
+      setPartida(r);
+      if (Number.isFinite(Number(r.saldo))) setSaldo(Number(r.saldo));
+    } catch (e) {
+      setError((e as Error).message || 'No se pudo resolver la mano.');
+    } finally {
+      setCargando(false);
+    }
+  }, [slug, token]);
+
+  const iniciar = () => llamar({ accion: 'iniciar', apuesta, clientId: crypto.randomUUID() });
+  const accion = (a: 'pedir' | 'plantar' | 'doblar') => partida && llamar({ accion: a, roundId: partida.roundId });
+  const activa = partida?.estado === 'en_curso';
+  const mensaje = partida && !activa
+    ? (partida.estado === 'gano'
+      ? `Ganaste ${dinero(partida.ganancia || 0)}`
+      : partida.estado === 'empate' ? 'Empate: recuperás tu apuesta' : 'La casa gana esta mano')
+    : activa ? `Tu mano: ${partida?.valorJugador}` : 'Hacé tu apuesta para repartir';
+
+  return (
+    <MesaBlackjack
+      nombre={juego.nombre}
+      saldo={dinero(saldo)}
+      mensaje={mensaje}
+      dealer={partida?.dealer || []}
+      valorDealer={partida?.valorDealer ?? null}
+      jugador={partida?.jugador || []}
+      valorJugador={partida ? partida.valorJugador : null}
+      piel={piel}
+      error={error}
+    >
+      {!activa && (
+        <>
+          <label className="bj-apuesta">
+            Apuesta
+            <input type="number" min={juego.min_bet} max={juego.max_bet} step={juego.paso_apuesta || 100} value={apuesta} onChange={(e) => setApuesta(Number(e.target.value))} />
+          </label>
+          <button disabled={cargando} onClick={iniciar}>{cargando ? 'Repartiendo…' : 'Repartir'}</button>
+        </>
+      )}
+      {activa && (
+        <>
+          <button className="sec" disabled={cargando} onClick={() => accion('pedir')}>Pedir</button>
+          <button disabled={cargando} onClick={() => accion('plantar')}>Plantarse</button>
+          {partida?.puedeDoblar && <button className="sec" disabled={cargando || saldo < partida.apuesta} onClick={() => accion('doblar')}>Doblar</button>}
+        </>
+      )}
+    </MesaBlackjack>
+  );
 }

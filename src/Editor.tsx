@@ -39,6 +39,7 @@ import { cfgConDefaults as cfgLimboRaw, rtpDe as rtpLimboDe } from '../motor/lim
 import { cfgConDefaults as cfgDiceRaw, rtpDe as rtpDiceDe } from '../motor/dice.js';
 import { cfgDe as cfgKenoDe } from './juego/keno.ts';
 import { cfgDe as cfgTorreDe } from './juego/torre.ts';
+import { cfgBlackjack, claveCarta, PALOS_BJ, RANGOS_BJ } from './juego/blackjack.ts';
 import { rtpDe as rtpSieteUdDe } from '../motor/sieteud.js';
 import { rtpDe as rtpKenoDe, rtpTabla as rtpKenoTabla, tablaBase as tablaKenoBase } from '../motor/keno.js';
 import { rtpDe as rtpTorreDe, multBase as multTorreBase, rtpPiso as rtpTorrePiso, chanceZafar as chanceTorre } from '../motor/torre.js';
@@ -2559,20 +2560,106 @@ function SeccionBlackjack({ juego, onCampo }: {
   juego: Juego;
   onCampo: (campo: string, valor: unknown) => void | Promise<void>;
 }) {
-  const base = { mazos: 6, dealerSoft17: 'plantar', pagoBlackjack: 1.5, permitirDoblar: true } as const;
-  const [cfg, setCfg] = useState(() => ({ ...base, ...(juego.blackjack_cfg || {}) }));
-  useEffect(() => setCfg({ ...base, ...(juego.blackjack_cfg || {}) }), [juego.id]);
+  const [cfg, setCfg] = useState(() => cfgBlackjack(juego.blackjack_cfg));
+  useEffect(() => setCfg(cfgBlackjack(juego.blackjack_cfg)), [juego.id]);
   const guardar = (next: typeof cfg) => { setCfg(next); onCampo('blackjack_cfg', next); };
-  return <div className="card fade-in" style={{ maxWidth: 680 }}>
-    <h3 style={{ marginTop: 0 }}>Reglas de Blackjack</h3>
-    <p className="hint">El reparto y el pago se resuelven siempre en el servidor.</p>
-    <div className="form-grid">
-      <label>Mazos del shoe<input type="number" min="1" max="8" value={cfg.mazos} onChange={(e) => guardar({ ...cfg, mazos: Math.max(1, Math.min(8, Math.round(Number(e.target.value) || 1))) })} /></label>
-      <label>Blackjack natural<select value={cfg.pagoBlackjack} onChange={(e) => guardar({ ...cfg, pagoBlackjack: Number(e.target.value) })}><option value="1.5">Paga 3:2</option><option value="1.2">Paga 6:5</option></select></label>
-      <label>Soft 17 del crupier<select value={cfg.dealerSoft17} onChange={(e) => guardar({ ...cfg, dealerSoft17: e.target.value as 'plantar' | 'pedir' })}><option value="plantar">Se planta</option><option value="pedir">Pide carta</option></select></label>
-      <label style={{ display: 'flex', gap: 8, alignItems: 'center', paddingTop: 22 }}><input type="checkbox" checked={cfg.permitirDoblar} onChange={(e) => guardar({ ...cfg, permitirDoblar: e.target.checked })} /> Permitir doblar</label>
+  const aplicar = (fn: (prev: typeof cfg) => typeof cfg) => {
+    setCfg((prev) => {
+      const next = fn(prev);
+      onCampo('blackjack_cfg', next);
+      return next;
+    });
+  };
+  const cargadas = Object.keys(cfg.cartas || {}).length;
+
+  const ponerReverso = async (file: File) => {
+    const url = await subirArchivo(file, `blackjack/${juego.id}`);
+    if (url) aplicar((prev) => ({ ...prev, reversoUrl: url }));
+  };
+  const ponerCara = async (clave: string, file: File) => {
+    const url = await subirArchivo(file, `blackjack/${juego.id}`);
+    if (!url) return;
+    aplicar((prev) => ({ ...prev, cartas: { ...prev.cartas, [clave]: url } }));
+  };
+  const quitarCara = (clave: string) => {
+    aplicar((prev) => {
+      const cartas = { ...prev.cartas };
+      delete cartas[clave];
+      return { ...prev, cartas };
+    });
+  };
+
+  return (
+    <div className="fade-in" style={{ maxWidth: 860 }}>
+      <div className="card" style={{ marginBottom: 16 }}>
+        <h3 style={{ marginTop: 0 }}>Reglas de Blackjack</h3>
+        <p className="hint">El reparto y el pago se resuelven siempre en el servidor.</p>
+        <div className="form-grid">
+          <label>Mazos del shoe<input type="number" min="1" max="8" value={cfg.mazos} onChange={(e) => guardar({ ...cfg, mazos: Math.max(1, Math.min(8, Math.round(Number(e.target.value) || 1))) })} /></label>
+          <label>Blackjack natural<select value={cfg.pagoBlackjack} onChange={(e) => guardar({ ...cfg, pagoBlackjack: Number(e.target.value) })}><option value="1.5">Paga 3:2</option><option value="1.2">Paga 6:5</option></select></label>
+          <label>Soft 17 del crupier<select value={cfg.dealerSoft17} onChange={(e) => guardar({ ...cfg, dealerSoft17: e.target.value as 'plantar' | 'pedir' })}><option value="plantar">Se planta</option><option value="pedir">Pide carta</option></select></label>
+          <label style={{ display: 'flex', gap: 8, alignItems: 'center', paddingTop: 22 }}><input type="checkbox" checked={cfg.permitirDoblar} onChange={(e) => guardar({ ...cfg, permitirDoblar: e.target.checked })} /> Permitir doblar</label>
+        </div>
+      </div>
+
+      <div className="card">
+        <h3 style={{ marginTop: 0 }}>Cartas</h3>
+        <p className="hint">
+          No es obligatorio. Sin imagen, la carta se dibuja sola. El reverso es uno solo para todo el mazo.
+          Las caras se cargan de a una. Llevás {cargadas} de 52.
+        </p>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 18 }}>
+          <label style={{
+            width: 64, height: 92, borderRadius: 8, border: '1px dashed var(--border)',
+            background: cfg.reversoUrl ? `center/contain no-repeat url("${cfg.reversoUrl}")` : 'var(--surface-alt)',
+            display: 'grid', placeItems: 'center', cursor: 'pointer', flexShrink: 0, color: 'var(--text-dim)', fontSize: 11,
+          }}>
+            {!cfg.reversoUrl && 'Reverso'}
+            <input type="file" accept="image/*" hidden onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ''; if (f) ponerReverso(f); }} />
+          </label>
+          <div>
+            <b style={{ fontSize: 13 }}>Reverso</b>
+            <p className="hint" style={{ margin: '2px 0 6px' }}>{cfg.reversoUrl ? 'Cargado. Clic en la carta para cambiarlo.' : 'Una imagen para todas las cartas boca abajo.'}</p>
+            {cfg.reversoUrl && <button style={{ fontSize: 11 }} onClick={() => guardar({ ...cfg, reversoUrl: null })}>Quitar reverso</button>}
+          </div>
+        </div>
+
+        {PALOS_BJ.map((p) => (
+          <div key={p.palo} style={{ marginBottom: 12 }}>
+            <div style={{ fontSize: 12, marginBottom: 6, color: p.palo === '♥' || p.palo === '♦' ? '#c4474e' : 'var(--text)' }}>{p.nombre} {p.palo}</div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+              {RANGOS_BJ.map((rango) => {
+                const clave = claveCarta(rango, p.palo);
+                const url = cfg.cartas[clave];
+                return (
+                  <div key={clave} style={{ position: 'relative' }}>
+                    <label title={clave} style={{
+                      width: 46, height: 64, borderRadius: 6, border: '1px solid var(--border)',
+                      display: 'grid', placeItems: 'center', cursor: 'pointer', overflow: 'hidden',
+                      background: url ? `center/contain no-repeat url("${url}")` : 'var(--surface-alt)',
+                      color: p.palo === '♥' || p.palo === '♦' ? '#c4474e' : 'var(--text)',
+                      fontSize: 12, fontWeight: 700,
+                    }}>
+                      {!url && rango}
+                      <input type="file" accept="image/*" hidden onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ''; if (f) ponerCara(clave, f); }} />
+                    </label>
+                    {url && (
+                      <button
+                        onClick={() => quitarCara(clave)}
+                        title="Quitar"
+                        style={{ position: 'absolute', top: -6, right: -6, width: 16, height: 16, padding: 0, borderRadius: 99, fontSize: 10, lineHeight: 1 }}
+                      >×</button>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
-  </div>;
+  );
 }
 
 function SeccionTorre({ juego, onCampo }: {

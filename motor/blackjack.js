@@ -10,13 +10,25 @@ export const CFG_DEFAULT = {
 const clamp = (n, lo, hi) => Math.max(lo, Math.min(hi, n));
 const obj = (v) => (v && typeof v === 'object' && !Array.isArray(v) ? v : {});
 
+function cartasDe(v) {
+  const o = obj(v);
+  const out = {};
+  for (const [k, val] of Object.entries(o)) {
+    if (typeof val === 'string' && val.trim()) out[k] = val.trim();
+  }
+  return out;
+}
+
 export function cfgConDefaults(cfg) {
   const c = obj(cfg);
+  const reverso = typeof c.reversoUrl === 'string' ? c.reversoUrl.trim() : '';
   return {
     mazos: clamp(Math.round(Number(c.mazos) || CFG_DEFAULT.mazos), 1, 8),
     dealerSoft17: c.dealerSoft17 === 'pedir' ? 'pedir' : 'plantar',
     pagoBlackjack: clamp(Number(c.pagoBlackjack) || CFG_DEFAULT.pagoBlackjack, 1, 2),
     permitirDoblar: c.permitirDoblar !== false,
+    reversoUrl: reverso || null,
+    cartas: cartasDe(c.cartas),
   };
 }
 

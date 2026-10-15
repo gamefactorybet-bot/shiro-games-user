@@ -943,6 +943,10 @@ export interface BlackjackCfg {
   dealerSoft17: 'plantar' | 'pedir';
   pagoBlackjack: number;
   permitirDoblar: boolean;
+  /** Una sola imagen para el dorso de todas las cartas. Vacío = dibujo. */
+  reversoUrl: string | null;
+  /** Cara opcional por carta. Clave `A♠`, `10♥`, etc. */
+  cartas: Record<string, string>;
 }
 
 export interface TorreCfg {
