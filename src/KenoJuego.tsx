@@ -139,7 +139,7 @@ export function KenoJuego({
   return (
     <>
       <KenoTablero escenario={escenario} juego={juego} cfg={cfg} tema={tema} pos={pos}
-        estado={p.estado} onToggle={p.onToggle} premioDemo={premioDemo} />
+        estado={p.estado} tabla={tabla} onToggle={p.onToggle} premioDemo={premioDemo} />
       {mostrarAuto && (
         <BotonAuto
           host={escenario.el}
@@ -150,7 +150,7 @@ export function KenoJuego({
           onStart={(n) => auto.start(n, () => jugarRef.current())} onStop={auto.stop}
         />
       )}
-      <KenoMesa escenario={escenario} cfg={cfg} pos={pos} estado={p.estado} tabla={tabla}
+      <KenoMesa escenario={escenario} cfg={cfg} pos={pos} estado={p.estado}
         minBet={minBet} maxBet={maxBet} pasoApuesta={paso}
         ocultarApuesta={fichas.length > 0} ocultarCaja={sinCaja}
         onCambiarApuesta={p.setApuesta} onAuto={p.onAuto} onLimpiar={p.onLimpiar} onPreparar={p.onPreparar} onJugar={p.jugar} />

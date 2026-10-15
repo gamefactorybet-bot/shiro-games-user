@@ -8,6 +8,7 @@ import type { Escenario } from './juego/escenario.ts';
 import type { EstadoKeno, Juego, KenoCfg, PosControlesKeno } from './types.ts';
 
 const fmt = (n: number) => Math.round(n).toLocaleString('es-PY');
+const mx = (n: number) => (n >= 100 ? String(Math.round(n)) : n >= 10 ? n.toFixed(1) : n.toFixed(2)) + '×';
 
 interface KenoTableroProps {
   escenario: Escenario;
@@ -16,6 +17,8 @@ interface KenoTableroProps {
   tema: TemaKeno;
   pos: PosControlesKeno;
   estado: EstadoKeno;
+  /** Multiplicadores correspondientes a la cantidad seleccionada. */
+  tabla: number[];
   /** Tocar un número (marcar / desmarcar). */
   onToggle: (n: number) => void;
   /** Monto de demo para ubicar el cartel de la ganancia desde ⚙ Ajustar. */
@@ -25,7 +28,7 @@ interface KenoTableroProps {
 // El tablero de números del Keno: la grilla que el jugador marca y
 // donde después se prenden los aciertos. Más el cartel de la ganancia,
 // que vive en el escenario para poder ubicarlo en cualquier lado.
-export function KenoTablero({ escenario, juego, cfg, tema, pos, estado, onToggle, premioDemo }: KenoTableroProps) {
+export function KenoTablero({ escenario, juego, cfg, tema, pos, estado, tabla, onToggle, premioDemo }: KenoTableroProps) {
   const fondoPantalla = (juego.fondo_url as string) || null;
   const cols = columnasKeno(cfg.tablero);
   const filas = Math.ceil(cfg.tablero / cols);
@@ -89,6 +92,12 @@ export function KenoTablero({ escenario, juego, cfg, tema, pos, estado, onToggle
         .kn-board-shell::before{content:"";position:absolute;inset:3px;border:1px solid color-mix(in srgb,var(--kn-frame,var(--accent)) 45%,transparent);border-radius:14px;pointer-events:none}
         .kn-host .kn-grid{ display:grid; gap:2.1cqw; width:100%; position:relative; z-index:1 }
         .kn-host.denso .kn-grid{gap:1.45cqw}
+        .kn-paybar{position:relative;z-index:1;display:flex;align-items:center;justify-content:center;gap:4px;flex-wrap:wrap;margin-top:7px;padding:7px 4px 1px;border-top:1px solid color-mix(in srgb,var(--kn-frame,var(--border)) 35%,transparent)}
+        .kn-paybar-label{margin-right:2px;color:var(--text-dim);font:800 7.5px var(--kn-body,inherit);letter-spacing:.13em;text-transform:uppercase}
+        .kn-pay{display:flex;align-items:baseline;gap:2px;min-width:42px;justify-content:center;padding:3px 5px;border:1px solid color-mix(in srgb,var(--kn-frame,var(--border)) 38%,transparent);border-radius:7px;background:color-mix(in srgb,var(--kn-cell,var(--surface-alt)) 82%,transparent);color:var(--text-dim);font:700 8px var(--kn-body,inherit);white-space:nowrap}
+        .kn-pay b{color:var(--accent);font-family:var(--kn-font-display,var(--kn-body));font-size:9px}
+        .kn-paybar-empty{padding:2px 0;color:var(--text-dim);font:600 8px var(--kn-body,inherit);letter-spacing:.04em}
+        .kn-host.denso .kn-paybar{gap:3px;padding-top:5px}.kn-host.denso .kn-pay{min-width:36px;padding:2px 4px;font-size:7px}.kn-host.denso .kn-pay b{font-size:8px}
         .kn-cell{
           min-width:0; min-height:0; border:1px solid color-mix(in srgb,var(--kn-frame,var(--border,#2a3242)) 46%,transparent); border-radius:24%;
           background:var(--kn-cell,var(--surface-alt,rgba(255,255,255,.05))); cursor:pointer; position:relative;overflow:hidden;padding:0;
@@ -174,6 +183,14 @@ export function KenoTablero({ escenario, juego, cfg, tema, pos, estado, onToggle
                   disabled={estado.fase !== 'idle'} onClick={() => onToggle(n)}><span className="kn-cell-num">{n}</span></button>
               );
             })}
+          </div>
+          <div className="kn-paybar" aria-label="Tabla de pagos de la selección actual">
+            {tabla.some((m) => m > 0) ? (
+              <>
+                <span className="kn-paybar-label">Pagos</span>
+                {tabla.map((m, h) => m > 0 ? <span className="kn-pay" key={h}><span>{h} ac.</span><b>{mx(m)}</b></span> : null)}
+              </>
+            ) : <span className="kn-paybar-empty">Seleccioná números para ver los pagos</span>}
           </div>
         </div>
       </div>

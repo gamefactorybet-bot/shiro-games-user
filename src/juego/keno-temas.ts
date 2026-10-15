@@ -27,6 +27,42 @@ export interface TemaKeno {
 
 const capaAbs = 'position:absolute;inset:0;width:100%;height:100%';
 
+type FuentePremium = 'clasica' | 'moderna' | 'futurista' | 'romantica';
+type PaletaPremium = {
+  acento: string; marco: string; oscuro: string; medio: string;
+  bolaClara: string; bolaOscura: string; acierto: string;
+  tinta?: string; fuente?: FuentePremium;
+};
+
+const FUENTES_PREMIUM: Record<FuentePremium, { href: string; body: string; display: string }> = {
+  clasica: { href: 'https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Manrope:wght@500;600;700;800&display=swap', body: "'Manrope', system-ui, sans-serif", display: "'Cinzel', Georgia, serif" },
+  moderna: { href: 'https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Manrope:wght@500;600;700;800&display=swap', body: "'Manrope', system-ui, sans-serif", display: "'Sora', system-ui, sans-serif" },
+  futurista: { href: 'https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;800&family=Inter:wght@500;600;700;800&display=swap', body: "'Inter', system-ui, sans-serif", display: "'Orbitron', system-ui, sans-serif" },
+  romantica: { href: 'https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Manrope:wght@500;600;700;800&display=swap', body: "'Manrope', system-ui, sans-serif", display: "'Cormorant Garamond', Georgia, serif" },
+};
+
+const temaPremium = (id: string, nombre: string, archivo: string, p: PaletaPremium): TemaKeno => {
+  const f = FUENTES_PREMIUM[p.fuente || 'clasica'];
+  const tinta = p.tinta || '#fff';
+  return {
+    id, nombre, premium: true,
+    font: { href: f.href, family: f.body },
+    fondo: `/keno/themes/${archivo}.webp`, miniatura: `/keno/themes/${archivo}-thumb.webp`, ficha: `/blackjack/skins/chips/${archivo}.webp`,
+    stageBg: `${p.oscuro} center/cover no-repeat url("/keno/themes/${archivo}.webp")`,
+    vars: {
+      '--accent': p.acento, '--accent-hover': `color-mix(in srgb,${p.acento} 76%,#fff)`, '--accent-text': tinta,
+      '--accent-soft': `color-mix(in srgb,${p.acento} 20%,transparent)`, '--border': `color-mix(in srgb,${p.marco} 42%,transparent)`,
+      '--surface-alt': `color-mix(in srgb,${p.oscuro} 80%,transparent)`, '--text': '#fffaf1', '--text-dim': `color-mix(in srgb,${p.marco} 58%,#aab0bb)`,
+      '--ok': p.acierto, '--danger': '#ff6f76', '--kn-font-display': f.display,
+      '--kn-btn-bg': `linear-gradient(180deg,color-mix(in srgb,${p.acento} 70%,#fff),${p.acento})`, '--kn-btn-ink': tinta,
+      '--kn-panel': `linear-gradient(145deg,color-mix(in srgb,${p.oscuro} 92%,transparent),color-mix(in srgb,#030509 86%,${p.oscuro}))`,
+      '--kn-cell': `linear-gradient(145deg,color-mix(in srgb,${p.medio} 86%,#fff 5%),color-mix(in srgb,${p.oscuro} 94%,#000))`,
+      '--kn-frame': p.marco, '--kn-glow': `color-mix(in srgb,${p.acento} 48%,transparent)`, '--kn-ball-hi': p.bolaClara, '--kn-ball-lo': p.bolaOscura,
+    },
+    bola: p.acento, acierto: p.acierto, acento: p.acento, deco: '',
+  };
+};
+
 export const TEMAS: TemaKeno[] = [
   {
     id: 'clasico', nombre: 'Clásico', font: null, stageBg: '', vars: {},
@@ -74,76 +110,30 @@ export const TEMAS: TemaKeno[] = [
     bola: '#8fe0ef', acierto: '#3fd0a0', acento: '#38bdd8',
     deco: '',
   },
-  {
-    id: 'royal-emerald', nombre: 'Royal Emerald', premium: true,
-    font: { href: 'https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Manrope:wght@500;600;700;800&display=swap', family: "'Manrope', system-ui, sans-serif" },
-    fondo: '/keno/themes/royal-emerald.webp', miniatura: '/keno/themes/royal-emerald-thumb.webp', ficha: '/blackjack/skins/chips/royal-emerald.webp',
-    stageBg: '#06150f center/cover no-repeat url("/keno/themes/royal-emerald.webp")',
-    vars: {
-      '--accent': '#e0b85b', '--accent-hover': '#f3d27b', '--accent-text': '#211704', '--accent-soft': 'rgba(224,184,91,.2)',
-      '--border': 'rgba(224,184,91,.4)', '--surface-alt': 'rgba(5,23,16,.76)', '--text': '#fff8e8', '--text-dim': '#cbbf9e',
-      '--ok': '#66e1a2', '--danger': '#ff786f', '--kn-font-display': "'Cinzel', Georgia, serif", '--kn-btn-bg': 'linear-gradient(180deg,#f4d47c,#ba8125)',
-      '--kn-btn-ink': '#211704', '--kn-panel': 'linear-gradient(145deg,rgba(4,30,21,.9),rgba(1,12,9,.84))', '--kn-cell': 'linear-gradient(145deg,rgba(16,62,44,.94),rgba(4,28,20,.96))',
-      '--kn-frame': '#d8ad51', '--kn-glow': 'rgba(224,184,91,.42)', '--kn-ball-hi': '#fff0a7', '--kn-ball-lo': '#b77a1f',
-    },
-    bola: '#d9aa43', acierto: '#66e1a2', acento: '#d9aa43', deco: '',
-  },
-  {
-    id: 'cyberpunk-district', nombre: 'Cyberpunk District', premium: true,
-    font: { href: 'https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;800&family=Inter:wght@500;600;700;800&display=swap', family: "'Inter', system-ui, sans-serif" },
-    fondo: '/keno/themes/cyberpunk-district.webp', miniatura: '/keno/themes/cyberpunk-district-thumb.webp', ficha: '/blackjack/skins/chips/cyberpunk-district.webp',
-    stageBg: '#070615 center/cover no-repeat url("/keno/themes/cyberpunk-district.webp")',
-    vars: {
-      '--accent': '#ff4bd8', '--accent-hover': '#ff83e7', '--accent-text': '#fff', '--accent-soft': 'rgba(255,75,216,.2)',
-      '--border': 'rgba(67,226,255,.42)', '--surface-alt': 'rgba(7,8,29,.8)', '--text': '#f8f3ff', '--text-dim': '#b9acd1',
-      '--ok': '#59ffd2', '--danger': '#ff5d78', '--kn-font-display': "'Orbitron', system-ui, sans-serif", '--kn-btn-bg': 'linear-gradient(100deg,#c82cff,#ff3da9 52%,#27dff4)',
-      '--kn-btn-ink': '#fff', '--kn-panel': 'linear-gradient(145deg,rgba(7,8,29,.94),rgba(18,6,35,.88))', '--kn-cell': 'linear-gradient(145deg,rgba(25,21,59,.94),rgba(8,9,31,.96))',
-      '--kn-frame': '#45e4ff', '--kn-glow': 'rgba(255,58,211,.52)', '--kn-ball-hi': '#c6fbff', '--kn-ball-lo': '#22bddc',
-    },
-    bola: '#42def2', acierto: '#59ffd2', acento: '#ff4bd8', deco: '',
-  },
-  {
-    id: 'inferno-vault', nombre: 'Inferno Vault', premium: true,
-    font: { href: 'https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@500;600;700;800&display=swap', family: "'Inter', system-ui, sans-serif" },
-    fondo: '/keno/themes/inferno-vault.webp', miniatura: '/keno/themes/inferno-vault-thumb.webp', ficha: '/blackjack/skins/chips/inferno-vault.webp',
-    stageBg: '#100603 center/cover no-repeat url("/keno/themes/inferno-vault.webp")',
-    vars: {
-      '--accent': '#ff872f', '--accent-hover': '#ffab55', '--accent-text': '#260b01', '--accent-soft': 'rgba(255,99,29,.22)',
-      '--border': 'rgba(255,133,47,.4)', '--surface-alt': 'rgba(25,7,3,.82)', '--text': '#fff2df', '--text-dim': '#d0ad91',
-      '--ok': '#ffd56a', '--danger': '#ff5b46', '--kn-font-display': "'Cinzel', Georgia, serif", '--kn-btn-bg': 'linear-gradient(180deg,#ffb34d,#e14b16)',
-      '--kn-btn-ink': '#260b01', '--kn-panel': 'linear-gradient(145deg,rgba(30,9,4,.94),rgba(8,5,4,.9))', '--kn-cell': 'linear-gradient(145deg,rgba(70,22,9,.92),rgba(20,8,5,.97))',
-      '--kn-frame': '#f07827', '--kn-glow': 'rgba(255,87,24,.56)', '--kn-ball-hi': '#ffe49b', '--kn-ball-lo': '#e6511b',
-    },
-    bola: '#ff812e', acierto: '#ffd56a', acento: '#ff6b25', deco: '',
-  },
-  {
-    id: 'lost-atlantis', nombre: 'Lost Atlantis', premium: true,
-    font: { href: 'https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Manrope:wght@500;600;700;800&display=swap', family: "'Manrope', system-ui, sans-serif" },
-    fondo: '/keno/themes/lost-atlantis.webp', miniatura: '/keno/themes/lost-atlantis-thumb.webp', ficha: '/blackjack/skins/chips/lost-atlantis.webp',
-    stageBg: '#03202a center/cover no-repeat url("/keno/themes/lost-atlantis.webp")',
-    vars: {
-      '--accent': '#69e4e2', '--accent-hover': '#9cffff', '--accent-text': '#032025', '--accent-soft': 'rgba(105,228,226,.2)',
-      '--border': 'rgba(156,255,255,.42)', '--surface-alt': 'rgba(2,34,45,.76)', '--text': '#edffff', '--text-dim': '#acd4d5',
-      '--ok': '#8fffb6', '--danger': '#ff8186', '--kn-font-display': "'Cormorant Garamond', Georgia, serif", '--kn-btn-bg': 'linear-gradient(180deg,#c4ffff,#4cc9cf)',
-      '--kn-btn-ink': '#032025', '--kn-panel': 'linear-gradient(145deg,rgba(3,53,63,.86),rgba(2,25,36,.88))', '--kn-cell': 'linear-gradient(145deg,rgba(20,96,106,.9),rgba(4,43,54,.94))',
-      '--kn-frame': '#a7ebe0', '--kn-glow': 'rgba(75,221,232,.48)', '--kn-ball-hi': '#efffff', '--kn-ball-lo': '#3fc5cf',
-    },
-    bola: '#71e4e7', acierto: '#8fffb6', acento: '#67dfe2', deco: '',
-  },
-  {
-    id: 'galactic-horizon', nombre: 'Galactic Horizon', premium: true,
-    font: { href: 'https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;800&family=Manrope:wght@500;600;700;800&display=swap', family: "'Manrope', system-ui, sans-serif" },
-    fondo: '/keno/themes/galactic-horizon.webp', miniatura: '/keno/themes/galactic-horizon-thumb.webp', ficha: '/blackjack/skins/chips/galactic-horizon.webp',
-    stageBg: '#07071c center/cover no-repeat url("/keno/themes/galactic-horizon.webp")',
-    vars: {
-      '--accent': '#ab7cff', '--accent-hover': '#c8a5ff', '--accent-text': '#fff', '--accent-soft': 'rgba(171,124,255,.2)',
-      '--border': 'rgba(121,176,255,.42)', '--surface-alt': 'rgba(8,9,35,.8)', '--text': '#f5f3ff', '--text-dim': '#b7b5d7',
-      '--ok': '#68f3d2', '--danger': '#ff728e', '--kn-font-display': "'Orbitron', system-ui, sans-serif", '--kn-btn-bg': 'linear-gradient(100deg,#6654ef,#a452e7 52%,#438ee9)',
-      '--kn-btn-ink': '#fff', '--kn-panel': 'linear-gradient(145deg,rgba(9,10,43,.94),rgba(20,8,50,.88))', '--kn-cell': 'linear-gradient(145deg,rgba(33,32,87,.92),rgba(10,10,42,.96))',
-      '--kn-frame': '#9ca8ff', '--kn-glow': 'rgba(144,91,255,.52)', '--kn-ball-hi': '#eee7ff', '--kn-ball-lo': '#765ce6',
-    },
-    bola: '#967cff', acierto: '#68f3d2', acento: '#a06eff', deco: '',
-  },
+  temaPremium('royal-emerald', 'Royal Emerald', 'royal-emerald', { acento:'#d9aa43', marco:'#e0c276', oscuro:'#06150f', medio:'#164b37', bolaClara:'#fff0a7', bolaOscura:'#a96d19', acierto:'#66e1a2', tinta:'#211704' }),
+  temaPremium('halloween-manor', 'Halloween Manor', 'halloween-manor', { acento:'#f08a35', marco:'#b96cff', oscuro:'#120718', medio:'#3b1642', bolaClara:'#ffe0a0', bolaOscura:'#a84720', acierto:'#80f0bd' }),
+  temaPremium('saint-patricks-vault', 'Saint Patrick’s Vault', 'saint-patricks-vault', { acento:'#e0b949', marco:'#63d98b', oscuro:'#04170d', medio:'#125c35', bolaClara:'#fff2a1', bolaOscura:'#a77315', acierto:'#63f2a0', tinta:'#201704' }),
+  temaPremium('christmas-grand-hall', 'Christmas Grand Hall', 'christmas-grand-hall', { acento:'#d8b453', marco:'#e7cc83', oscuro:'#071711', medio:'#164630', bolaClara:'#fff2b1', bolaOscura:'#a3701e', acierto:'#70e6a2', tinta:'#211704' }),
+  temaPremium('new-year-midnight', 'New Year Midnight', 'new-year-midnight', { acento:'#e1bc59', marco:'#f0d58c', oscuro:'#08090d', medio:'#28231b', bolaClara:'#fff5c5', bolaOscura:'#9c721d', acierto:'#79e8c1', tinta:'#211704', fuente:'moderna' }),
+  temaPremium('chinese-new-year', 'Chinese New Year', 'chinese-new-year', { acento:'#e7b74e', marco:'#ffd477', oscuro:'#220407', medio:'#78141d', bolaClara:'#fff1ad', bolaOscura:'#ac6218', acierto:'#75e7a0', tinta:'#271104' }),
+  temaPremium('dia-de-muertos', 'Día de Muertos', 'dia-de-muertos', { acento:'#ed69bd', marco:'#39e1d0', oscuro:'#12091b', medio:'#4e1c55', bolaClara:'#ffd7f2', bolaOscura:'#a62e75', acierto:'#65f0c5', fuente:'moderna' }),
+  temaPremium('valentine-noir', 'Valentine Noir', 'valentine-noir', { acento:'#d56379', marco:'#e5ae8a', oscuro:'#16070b', medio:'#4b1722', bolaClara:'#ffe1df', bolaOscura:'#9b3247', acierto:'#f3c68c', fuente:'romantica' }),
+  temaPremium('venetian-carnival', 'Venetian Carnival', 'venetian-carnival', { acento:'#d4ad55', marco:'#79aaff', oscuro:'#061226', medio:'#153b70', bolaClara:'#fff0b0', bolaOscura:'#99701c', acierto:'#6ce2ca', tinta:'#211704', fuente:'romantica' }),
+  temaPremium('oktoberfest-lodge', 'Oktoberfest Lodge', 'oktoberfest-lodge', { acento:'#d49a45', marco:'#b7d58b', oscuro:'#0d170f', medio:'#365a36', bolaClara:'#ffe8a2', bolaOscura:'#965a1e', acierto:'#76e6a0', tinta:'#241604' }),
+  temaPremium('winter-palace', 'Winter Palace', 'winter-palace', { acento:'#9adfff', marco:'#e6f8ff', oscuro:'#071827', medio:'#245473', bolaClara:'#ffffff', bolaOscura:'#4c96bd', acierto:'#a6ffdf', tinta:'#06202b', fuente:'romantica' }),
+  temaPremium('summer-riviera', 'Summer Riviera', 'summer-riviera', { acento:'#42cbea', marco:'#e3c37a', oscuro:'#032030', medio:'#096888', bolaClara:'#eaffff', bolaOscura:'#187a9b', acierto:'#7af0be', tinta:'#052029', fuente:'moderna' }),
+  temaPremium('inferno-vault', 'Inferno Vault', 'inferno-vault', { acento:'#ff7929', marco:'#f09a49', oscuro:'#170603', medio:'#64210c', bolaClara:'#ffe49b', bolaOscura:'#c33d12', acierto:'#ffd56a', tinta:'#260b01' }),
+  temaPremium('galactic-horizon', 'Galactic Horizon', 'galactic-horizon', { acento:'#a878ff', marco:'#91b5ff', oscuro:'#07071c', medio:'#272369', bolaClara:'#eee7ff', bolaOscura:'#6248cc', acierto:'#68f3d2', fuente:'futurista' }),
+  temaPremium('emerald-jungle', 'Emerald Jungle', 'emerald-jungle', { acento:'#65c96f', marco:'#c6a45e', oscuro:'#04150b', medio:'#15502b', bolaClara:'#eaffb5', bolaOscura:'#297b35', acierto:'#7ff0b5', tinta:'#08210d' }),
+  temaPremium('lost-atlantis', 'Lost Atlantis', 'lost-atlantis', { acento:'#69e4e2', marco:'#bcefe6', oscuro:'#03202a', medio:'#146a75', bolaClara:'#efffff', bolaOscura:'#279ba7', acierto:'#8fffb6', tinta:'#032025', fuente:'romantica' }),
+  temaPremium('pharaohs-chamber', 'Pharaoh’s Chamber', 'pharaohs-chamber', { acento:'#ddb24d', marco:'#4e8fd7', oscuro:'#071124', medio:'#173d72', bolaClara:'#fff1a7', bolaOscura:'#9a691a', acierto:'#72e5ba', tinta:'#211704' }),
+  temaPremium('cyberpunk-district', 'Cyberpunk District', 'cyberpunk-district', { acento:'#ff4bd8', marco:'#45e4ff', oscuro:'#070615', medio:'#271b59', bolaClara:'#c6fbff', bolaOscura:'#179ab9', acierto:'#59ffd2', fuente:'futurista' }),
+  temaPremium('dragon-temple', 'Dragon Temple', 'dragon-temple', { acento:'#d99a42', marco:'#e5bf6c', oscuro:'#190609', medio:'#67151e', bolaClara:'#fff0a6', bolaOscura:'#a65516', acierto:'#74e7a5', tinta:'#211704' }),
+  temaPremium('pirate-treasure-vault', 'Pirate Treasure Vault', 'pirate-treasure-vault', { acento:'#d29a48', marco:'#49b8b0', oscuro:'#041719', medio:'#125052', bolaClara:'#ffe9a5', bolaOscura:'#925d1b', acierto:'#69e6b7', tinta:'#211704' }),
+  temaPremium('cloud-kingdom', 'Cloud Kingdom', 'cloud-kingdom', { acento:'#e2bd63', marco:'#d7f2ff', oscuro:'#1c334d', medio:'#739eb6', bolaClara:'#ffffff', bolaOscura:'#a47b25', acierto:'#8bf1d5', tinta:'#211704', fuente:'romantica' }),
+  temaPremium('enchanted-forest', 'Enchanted Forest', 'enchanted-forest', { acento:'#8d7cff', marco:'#70d89d', oscuro:'#06140e', medio:'#253b63', bolaClara:'#eee9ff', bolaOscura:'#5941bd', acierto:'#74f0b4', fuente:'romantica' }),
+  temaPremium('steampunk-foundry', 'Steampunk Foundry', 'steampunk-foundry', { acento:'#c87c3a', marco:'#dfa15f', oscuro:'#150d08', medio:'#57311b', bolaClara:'#ffe1a1', bolaOscura:'#854316', acierto:'#9bdc8b', tinta:'#211204' }),
+  temaPremium('moonlit-castle', 'Moonlit Castle', 'moonlit-castle', { acento:'#8eaee8', marco:'#d0d9ed', oscuro:'#061126', medio:'#213e67', bolaClara:'#f4f7ff', bolaOscura:'#526fa9', acierto:'#75e4cc', fuente:'romantica' }),
 ];
 
 const POR_ID = new Map(TEMAS.map((t) => [t.id, t]));

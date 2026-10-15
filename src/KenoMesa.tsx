@@ -18,8 +18,6 @@ interface KenoMesaProps {
   minBet: number;
   maxBet: number;
   pasoApuesta: number;
-  /** Tabla de multiplicadores para la cantidad marcada ahora. */
-  tabla: number[];
   /** El juego usa fichas: se ocultan los −/+. */
   ocultarApuesta?: boolean;
   /** Además, ocultar del todo el recuadro de apuesta. */
@@ -36,7 +34,7 @@ interface KenoMesaProps {
 // el botón, cada uno en una capa aparte (portal en el escenario) y
 // posicionable desde ⚙ Ajustar.
 export function KenoMesa({
-  escenario, cfg, pos, estado, minBet, maxBet, pasoApuesta, tabla, ocultarApuesta, ocultarCaja,
+  escenario, cfg, pos, estado, minBet, maxBet, pasoApuesta, ocultarApuesta, ocultarCaja,
   onCambiarApuesta, onAuto, onLimpiar, onPreparar, onJugar,
 }: KenoMesaProps) {
   const { fase, picked, drawn, res } = estado;
@@ -104,21 +102,6 @@ export function KenoMesa({
           ))
           : <span className="hint" style={{ margin: 0, alignSelf: 'center', fontSize: 10 }}>Las bolas aparecerán en esta bandeja</span>}
       </div>
-
-      {/* Tabla de pagos de la selección actual */}
-      {picked.length > 0 && !res && (
-        <div style={{
-          position: 'absolute', left: `${pos.apuesta.x}%`, top: `calc(${pos.apuesta.y}% - 40px)`, transform: 'translate(-50%,-50%)',
-          display: 'flex', gap: 4, flexWrap: 'wrap', justifyContent: 'center', maxWidth: '90%',
-        }}>
-          {tabla.map((m, h) => (m > 0
-            ? <span key={h} style={{
-                fontFamily: 'var(--kn-font-display, monospace)', fontSize: 10.5, padding: '2px 6px', borderRadius: 6,
-                background: 'var(--surface-alt)', border: '1px solid var(--border)', color: 'var(--text-dim)',
-              }}>{h}→{mx(m)}</span>
-            : null))}
-        </div>
-      )}
 
       {/* Apuesta */}
       {ocultarCaja ? null : ocultarApuesta ? (
