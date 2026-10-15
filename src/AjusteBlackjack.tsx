@@ -22,13 +22,15 @@ const ES_ZONA = new Set<AjusteBlackjackElem>(['nombre', 'saldo', 'mazo', 'crupie
 
 // Panel de la vista previa del 21. Mueve y escala cada pieza, y guarda
 // el diseño en `blackjack_cfg.mesa` sin pisar las reglas ni las cartas.
-export function AjusteBlackjack({ juego, mesa, onChange, elem, onElem, onGuardada }: {
+export function AjusteBlackjack({ juego, mesa, onChange, elem, onElem, onGuardada, mostrarNombre, onMostrarNombre }: {
   juego: Juego;
   mesa: DisenoBlackjack;
   onChange: (mesa: DisenoBlackjack) => void;
   elem: AjusteBlackjackElem;
   onElem: (id: AjusteBlackjackElem) => void;
   onGuardada?: (cfg: Juego['blackjack_cfg']) => void;
+  mostrarNombre: boolean;
+  onMostrarNombre: (v: boolean) => void;
 }) {
   const [msg, setMsg] = useState('');
   const zona = ES_ZONA.has(elem) ? mesa[elem as PiezaBlackjack] : null;
@@ -60,6 +62,11 @@ export function AjusteBlackjack({ juego, mesa, onChange, elem, onElem, onGuardad
         Elegí una pieza y movela con los controles, o arrastrala en la mesa.
         El tamaño está en la escala o en el ancho de la carta.
       </p>
+
+      <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, marginBottom: 12 }}>
+        <input type="checkbox" checked={mostrarNombre} onChange={(e) => onMostrarNombre(e.target.checked)} />
+        Mostrar el nombre
+      </label>
 
       <div className="grupo-nav" style={{ marginBottom: 10 }}>
         {TEMAS_BLACKJACK.map((t) => (

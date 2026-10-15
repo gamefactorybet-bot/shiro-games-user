@@ -28,13 +28,15 @@ const dinero = (n: number) => new Intl.NumberFormat('es-PY', { maximumFractionDi
  * Vista previa del 21. Este motor no tiene símbolos: la mesa se arma
  * con el mazo local y plata de mentira, sin pasar por la previa de rodillos.
  */
-export function PreviewBlackjack({ juego, onClose, onMesa }: {
+export function PreviewBlackjack({ juego, onClose, onMesa, onMostrarNombre }: {
   juego: Juego;
   onClose: () => void;
   onMesa?: (cfg: Juego['blackjack_cfg']) => void;
+  onMostrarNombre?: (v: boolean) => void;
 }) {
   const cfg = useMemo(() => cfgBlackjack(juego.blackjack_cfg), [juego]);
   const [mesa, setMesa] = useState<DisenoBlackjack>(() => cfgBlackjack(juego.blackjack_cfg).mesa);
+  const [mostrarNombre, setMostrarNombre] = useState((juego.mostrar_nombre ?? true) !== false);
   const [mostrarPanel, setMostrarPanel] = useState(false);
   const [elem, setElem] = useState<AjusteBlackjackElem>('crupier');
   const [host, setHost] = useState<HTMLElement | null>(null);
@@ -146,7 +148,16 @@ export function PreviewBlackjack({ juego, onClose, onMesa }: {
       </div>
       {mostrarPanel && (
         <div style={{ position: 'absolute', top: 56, right: 12, zIndex: 80 }}>
-          <AjusteBlackjack juego={juego} mesa={mesa} onChange={setMesa} elem={elem} onElem={setElem} onGuardada={onMesa} />
+          <AjusteBlackjack
+            juego={juego}
+            mesa={mesa}
+            onChange={setMesa}
+            elem={elem}
+            onElem={setElem}
+            onGuardada={onMesa}
+            mostrarNombre={mostrarNombre}
+            onMostrarNombre={(v) => { setMostrarNombre(v); onMostrarNombre?.(v); }}
+          />
         </div>
       )}
       <MesaBlackjack
@@ -158,6 +169,7 @@ export function PreviewBlackjack({ juego, onClose, onMesa }: {
         jugador={mano?.jugador || []}
         piel={cfg}
         mesa={mesa}
+        mostrarNombre={mostrarNombre}
         demo
         ajuste={mostrarPanel ? {
           elem,

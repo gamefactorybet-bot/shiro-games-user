@@ -942,7 +942,16 @@ export function Editor({ juego: juegoProp, onCambio }: EditorProps) {
                               : esTorre
                                 ? <PreviewTorre juego={juego} onClose={() => setPreviewAbierto(false)} />
                                 : esBlackjack
-                                  ? <PreviewBlackjack juego={juego} onClose={() => setPreviewAbierto(false)} onMesa={(cfg) => { setJuego((j) => ({ ...j, blackjack_cfg: cfg as Juego['blackjack_cfg'] })); marcarGuardado(); }} />
+                                  ? <PreviewBlackjack
+                                    juego={juego}
+                                    onClose={() => setPreviewAbierto(false)}
+                                    onMesa={(cfg) => { setJuego((j) => ({ ...j, blackjack_cfg: cfg as Juego['blackjack_cfg'] })); marcarGuardado(); }}
+                                    onMostrarNombre={(v) => {
+                                      setJuego((j) => ({ ...j, mostrar_nombre: v }));
+                                      void supabase.from('juegos').update({ mostrar_nombre: v }).eq('id', juego.id);
+                                      marcarGuardado();
+                                    }}
+                                  />
                                   : <Preview juego={juego} simbolos={simbolos} sonidos={sonidos} efectos={efectos} onClose={() => setPreviewAbierto(false)} />}
         </Suspense>
       )}

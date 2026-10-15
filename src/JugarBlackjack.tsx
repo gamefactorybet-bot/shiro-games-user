@@ -72,6 +72,7 @@ export function JugarBlackjack({ datos, saldoInicial, slug, token }: { datos: Da
       jugador={partida?.jugador || []}
       piel={piel}
       mesa={piel.mesa}
+      mostrarNombre={(juego.mostrar_nombre ?? true) !== false}
       error={error}
       acciones={activa ? (
         <>

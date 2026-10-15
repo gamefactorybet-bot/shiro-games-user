@@ -201,7 +201,7 @@ function estiloZona(z: { x: number; y: number; escala: number }): CSSProperties 
 }
 
 export function MesaBlackjack({
-  nombre, saldo, mensaje, dealer, jugador, piel, mesa, error, demo, anclaRef, ajuste, acciones, children,
+  nombre, saldo, mensaje, dealer, jugador, piel, mesa, error, demo, mostrarNombre = true, anclaRef, ajuste, acciones, children,
 }: {
   nombre: string;
   saldo: string;
@@ -212,6 +212,8 @@ export function MesaBlackjack({
   mesa: DisenoBlackjack;
   error?: string;
   demo?: boolean;
+  /** El cartel con la marca y el nombre del juego. */
+  mostrarNombre?: boolean;
   anclaRef?: Ref<HTMLElement>;
   /** Pieza marcada en la vista previa. Se puede arrastrar. */
   ajuste?: { elem: AjusteBlackjackElem; onMover: (x: number, y: number) => void } | null;
@@ -270,10 +272,12 @@ export function MesaBlackjack({
         <span className="bj-pozo" />
       </section>
 
-      <div className={`bj-zona bj-nombre${marca('nombre')}`} style={estiloZona(mesa.nombre)} {...arrastre('nombre')}>
-        <div className="bj-brand">{nombreProveedor()}</div>
-        <strong>{nombre}</strong>
-      </div>
+      {mostrarNombre && (
+        <div className={`bj-zona bj-nombre${marca('nombre')}`} style={estiloZona(mesa.nombre)} {...arrastre('nombre')}>
+          <div className="bj-brand">{nombreProveedor()}</div>
+          <strong>{nombre}</strong>
+        </div>
+      )}
       <div className={`bj-zona bj-saldo${marca('saldo')}`} style={estiloZona(mesa.saldo)} {...arrastre('saldo')}>
         Saldo <b>{saldo}</b>
       </div>
