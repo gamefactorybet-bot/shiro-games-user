@@ -195,29 +195,37 @@ export function PreviewBlackjack({ juego, onClose, onMesa, onMostrarNombre }: {
                 : { ...m, [elem]: { ...m[elem as PiezaBlackjack], x, y } }
           )),
         } : null}
-        acciones={!activa ? (
-          <>
+        acciones={(
+          <div className="bj-control-stack">
             {!(fichas.length > 0 && fichasSinCajaDe(juego)) && (
-              <label className="bj-apuesta">
-                Apuesta
+              <label className="bj-apuesta bj-stepper">
+                <button type="button" aria-label="Bajar apuesta" disabled={activa} onClick={() => setApuesta((v) => Math.max(minBet, v - paso))}>−</button>
+                <span>Apuesta</span>
                 <input
+                  aria-label="Monto de la apuesta"
                   type="number"
+                  disabled={activa}
                   min={minBet}
                   max={maxBet}
                   step={paso}
                   value={apuesta}
                   onChange={(e) => setApuesta(Number(e.target.value))}
                 />
+                <button type="button" aria-label="Subir apuesta" disabled={activa} onClick={() => setApuesta((v) => Math.min(maxBet, v + paso))}>＋</button>
               </label>
             )}
-            <button disabled={saldo < minBet} onClick={repartir}><span aria-hidden>♠</span> Repartir</button>
-          </>
-        ) : (
-          <>
-            <button className="sec" onClick={pedir}><span aria-hidden>＋</span> Pedir</button>
-            <button onClick={plantar}><span aria-hidden>◆</span> Plantarse</button>
-            {puedeDoblar && <button className="sec" onClick={doblar}><span aria-hidden>×2</span> Doblar</button>}
-          </>
+            {activa ? (
+              <div className="bj-actionbar">
+                <button className="accion-pedir" onClick={pedir}><span aria-hidden>♣</span>Pedir</button>
+                <button className="accion-plantar" onClick={plantar}><span aria-hidden>✋</span>Plantarse</button>
+                <button className="accion-doblar" disabled={!puedeDoblar} onClick={doblar}><span aria-hidden>×2</span>Doblar</button>
+              </div>
+            ) : (
+              <div className="bj-actionbar solo">
+                <button className="accion-repartir" disabled={saldo < minBet} onClick={repartir}><span aria-hidden>♠</span>Repartir</button>
+              </div>
+            )}
+          </div>
         )}
       >
         <FichasEnMesa

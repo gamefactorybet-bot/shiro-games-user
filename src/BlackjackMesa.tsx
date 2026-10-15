@@ -7,7 +7,9 @@ import { valor } from '../motor/blackjack.js';
 import type { AjusteBlackjackElem, BlackjackCfg, DisenoBlackjack, Ficha, Juego, PiezaBlackjack } from './types.ts';
 
 export type CartaBj = { rango: string; palo: string } | null;
-type PielBj = Pick<BlackjackCfg, 'reversoUrl' | 'cartas'>;
+type PielBj = Pick<BlackjackCfg, 'fondoUrl' | 'reversoUrl' | 'cartas'>;
+
+const FONDO_ROYAL = '/blackjack/royal-emerald-table-v1.webp';
 
 const roja = (palo?: string) => palo === '♥' || palo === '♦';
 
@@ -251,7 +253,7 @@ export function MesaBlackjack({
   resultado?: 'en_curso' | 'gano' | 'perdio' | 'empate' | null;
   dealer: CartaBj[];
   jugador: CartaBj[];
-  piel: Pick<BlackjackCfg, 'reversoUrl' | 'cartas'>;
+  piel: Pick<BlackjackCfg, 'fondoUrl' | 'reversoUrl' | 'cartas'>;
   mesa: DisenoBlackjack;
   error?: string;
   demo?: boolean;
@@ -266,6 +268,7 @@ export function MesaBlackjack({
   movimiento?: 'cinematico' | 'rapido' | 'reducido';
   ambiente?: number;
 }) {
+  const [menuAbierto, setMenuAbierto] = useState(false);
   const { vista, enCurso } = useManoEnVivo(dealer, jugador);
   const fx = useReparto(vista.d, vista.j);
   const totalD = totalMano(vista.d);
@@ -306,8 +309,21 @@ export function MesaBlackjack({
   return (
     <main ref={anclaRef} className={`blackjack tema-${mesa.tema} mov-${movimiento}${demo ? ' demo' : ''}${resultado && resultado !== 'en_curso' ? ` resultado-${resultado}` : ''}`} style={vars} aria-busy={enCurso}>
       <style>{ESTILOS}</style>
+      <div className="bj-fondo" style={{ backgroundImage: `url("${piel.fondoUrl || FONDO_ROYAL}")` }} aria-hidden />
+      <div className="bj-tinte" aria-hidden />
       <div className="bj-ambiente" aria-hidden><i /><i /><i /><i /><b /><b /></div>
       <div className="bj-vineta" aria-hidden />
+      <button className={`bj-menu${menuAbierto ? ' abierto' : ''}`} type="button" aria-label="Información de la mesa" aria-expanded={menuAbierto} onClick={() => setMenuAbierto((v) => !v)}>
+        <i /><i /><i />
+      </button>
+      {menuAbierto && (
+        <aside className="bj-menu-panel">
+          <b>Mesa Blackjack</b>
+          <span>Blackjack paga 3 a 2</span>
+          <span>El crupier se planta en 17</span>
+          <small>{nombreProveedor()}</small>
+        </aside>
+      )}
       <section
         className={`bj-pano${marca('pano')}`}
         style={{ left: `${mesa.pano.x}%`, top: `${mesa.pano.y}%`, width: `${mesa.pano.ancho}%`, height: `${mesa.pano.alto}%` }}
@@ -325,8 +341,8 @@ export function MesaBlackjack({
 
       {mostrarNombre && (
         <div className={`bj-zona bj-nombre${marca('nombre')}`} style={estiloZona(mesa.nombre)} {...arrastre('nombre')}>
-          <div className="bj-brand">{nombreProveedor()}</div>
-          <strong>{nombre}</strong>
+          <span className="bj-emblema" aria-hidden>♠</span>
+          <div><strong>{nombre}</strong><div className="bj-brand">{nombreProveedor()}</div></div>
         </div>
       )}
       <div className={`bj-zona bj-saldo${marca('saldo')}`} style={estiloZona(mesa.saldo)} {...arrastre('saldo')}>
@@ -344,7 +360,7 @@ export function MesaBlackjack({
       </div>
 
       <div className={`bj-zona${marca('crupier')}`} style={estiloZona(mesa.crupier)} {...arrastre('crupier')}>
-        <div className="bj-label">Crupier {totalD != null ? `· ${totalD}` : ''}</div>
+        <div className="bj-label"><span>Crupier</span>{totalD != null && <b>{totalD}</b>}</div>
         <div className="bj-mano">
           {vista.d.map((c, i) => (
             <CartaVista key={`d-${i}-${firmaCarta(c)}`} carta={c} oculta={!c} piel={piel} clase={fx.dealer[i]?.clase} delay={fx.dealer[i]?.delay} />
@@ -358,7 +374,7 @@ export function MesaBlackjack({
       </div>
 
       <div className={`bj-zona${marca('jugador')}`} style={estiloZona(mesa.jugador)} {...arrastre('jugador')}>
-        <div className="bj-label">Jugador {totalJ != null ? `· ${totalJ}` : ''}</div>
+        <div className="bj-label"><span>Tu mano</span>{totalJ != null && <b>{totalJ}</b>}</div>
         <div className="bj-mano">
           {vista.j.map((c, i) => (
             <CartaVista key={`j-${i}-${firmaCarta(c)}`} carta={c} piel={piel} clase={fx.jugador[i]?.clase} delay={fx.jugador[i]?.delay} />
@@ -390,43 +406,49 @@ const ESTILOS = `
   --bj-card-a:#fffefb;--bj-card-b:#eee5d6;--bj-rojo:#a81f32;
   --bj-textura:radial-gradient(circle at 50% 50%,rgba(255,255,255,.025) 0 1px,transparent 1.5px);
   --bj-motivo:radial-gradient(circle at 50% 50%,rgba(255,255,255,.035) 0 1px,transparent 1.5px);
+  --bj-tinte:rgba(4,55,39,.06);
   --bj-ambiente: .8;--bj-velocidad:.78s;
-  position:relative;min-height:100vh;box-sizing:border-box;color:var(--bj-text);
+  position:relative;width:min(100vw,66.667dvh,520px);height:100dvh;min-height:560px;margin:0 auto;
+  box-sizing:border-box;color:var(--bj-text);
   overflow:hidden;font-family:"Avenir Next","Manrope","Inter",ui-sans-serif,system-ui,sans-serif;
-  background:
-    radial-gradient(ellipse at 50% -8%, var(--bj-luz), transparent 46%),
-    var(--bj-textura),
-    radial-gradient(ellipse at 50% 120%, var(--bj-bg-b) 0%, var(--bj-bg-a) 58%,var(--bj-bg-b) 100%);
-  background-size:auto,14px 14px,auto;
+  background:#070604;
+  box-shadow:0 0 80px #000,0 0 0 1px rgba(213,175,99,.2);
   isolation:isolate;
 }
+.bj-fondo{position:absolute;inset:0;z-index:-3;background-position:center;background-size:cover;background-repeat:no-repeat;transform:scale(1.003)}
+.bj-tinte{position:absolute;inset:0;z-index:-2;background:var(--bj-tinte);mix-blend-mode:color;pointer-events:none}
 .blackjack.tema-burdeos{
   --bj-luz:rgba(160,28,52,.5);
   --bj-pano-a:#341018;--bj-pano-b:#12060a;
   --bj-madera:#16090c;--bj-oro:#e0c089;
+  --bj-tinte:rgba(116,4,28,.45);
 }
 .blackjack.tema-carbon{
   --bj-luz:rgba(86,96,112,.32);
   --bj-pano-a:#1c1e26;--bj-pano-b:#08090c;
   --bj-madera:#121318;--bj-oro:#c2b09a;--bj-oro-suave:rgba(194,176,154,.3);
+  --bj-tinte:rgba(20,24,33,.68);
 }
 .blackjack.tema-caoba{
   --bj-luz:rgba(140,72,18,.42);
   --bj-pano-a:#3a1c0c;--bj-pano-b:#140904;
   --bj-madera:#1c0e08;--bj-oro:#e2a45c;--bj-oro-suave:rgba(226,164,92,.36);
   --bj-btn-a:#f3c48a;--bj-btn-b:#a86a28;
+  --bj-tinte:rgba(99,35,4,.38);
 }
 .blackjack.tema-zafiro{
   --bj-luz:rgba(46,82,150,.48);
   --bj-pano-a:#10203c;--bj-pano-b:#070b14;
   --bj-madera:#0c121e;--bj-oro:#c5d2e0;--bj-oro-suave:rgba(197,210,224,.34);
   --bj-btn-a:#e8eef6;--bj-btn-b:#8ea0b5;--bj-btn-ink:#121820;
+  --bj-tinte:rgba(0,45,126,.48);
 }
 .blackjack.tema-monaco{
   --bj-luz:rgba(255,235,193,.5);--bj-pano-a:#d8c9aa;--bj-pano-b:#8d7654;
   --bj-madera:#e5d8bd;--bj-oro:#9c6e2e;--bj-oro-suave:rgba(156,110,46,.38);
   --bj-bg-a:#d8d0bf;--bj-bg-b:#8c806b;--bj-text:#201c16;
   --bj-btn-a:#fff1c6;--bj-btn-b:#bd9147;--bj-btn-ink:#251b0e;
+  --bj-tinte:rgba(225,204,164,.38);
 }
 .blackjack.tema-artdeco{
   --bj-luz:rgba(214,174,76,.42);--bj-pano-a:#20201e;--bj-pano-b:#080807;
@@ -434,6 +456,7 @@ const ESTILOS = `
   --bj-bg-a:#171612;--bj-bg-b:#030303;
   --bj-textura:repeating-linear-gradient(135deg,transparent 0 34px,rgba(227,189,94,.035) 35px 36px);
   --bj-motivo:linear-gradient(45deg,transparent 47%,rgba(227,189,94,.08) 48% 52%,transparent 53%),linear-gradient(-45deg,transparent 47%,rgba(227,189,94,.08) 48% 52%,transparent 53%);
+  --bj-tinte:rgba(19,16,7,.58);
 }
 .blackjack.tema-neon{
   --bj-luz:rgba(213,47,255,.5);--bj-pano-a:#17215d;--bj-pano-b:#080a28;
@@ -441,6 +464,7 @@ const ESTILOS = `
   --bj-bg-a:#0d1033;--bj-bg-b:#030413;--bj-btn-a:#fd78ff;--bj-btn-b:#8150ff;--bj-btn-ink:#110b27;
   --bj-textura:linear-gradient(rgba(89,223,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(255,90,236,.025) 1px,transparent 1px);
   --bj-motivo:linear-gradient(rgba(108,238,255,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(240,92,255,.06) 1px,transparent 1px);
+  --bj-tinte:rgba(79,20,151,.55);
 }
 .blackjack.tema-artico{
   --bj-luz:rgba(140,226,255,.55);--bj-pano-a:#d9edf0;--bj-pano-b:#6d9ca7;
@@ -448,18 +472,21 @@ const ESTILOS = `
   --bj-bg-a:#d9e8eb;--bj-bg-b:#6c9098;--bj-text:#13262b;
   --bj-btn-a:#ecfdff;--bj-btn-b:#72bbc9;--bj-btn-ink:#102b31;
   --bj-motivo:linear-gradient(120deg,transparent 35%,rgba(255,255,255,.13) 36% 37%,transparent 38% 66%,rgba(255,255,255,.09) 67% 68%,transparent 69%);
+  --bj-tinte:rgba(152,226,239,.55);
 }
 .blackjack.tema-imperial{
   --bj-luz:rgba(218,34,48,.52);--bj-pano-a:#6e111c;--bj-pano-b:#200508;
   --bj-madera:#150405;--bj-oro:#e1b45b;--bj-oro-suave:rgba(225,180,91,.42);
   --bj-bg-a:#36070c;--bj-bg-b:#090102;--bj-btn-a:#f0c96e;--bj-btn-b:#ae7424;
   --bj-motivo:radial-gradient(circle,transparent 0 45%,rgba(225,180,91,.08) 46% 48%,transparent 49%);
+  --bj-tinte:rgba(137,0,15,.56);
 }
 .blackjack.tema-havana{
   --bj-luz:rgba(151,97,47,.45);--bj-pano-a:#3e4b2d;--bj-pano-b:#141c0d;
   --bj-madera:#35180c;--bj-oro:#c98c4e;--bj-oro-suave:rgba(201,140,78,.38);
   --bj-bg-a:#2b2118;--bj-bg-b:#0d0906;--bj-btn-a:#ddb078;--bj-btn-b:#8d562a;
   --bj-motivo:repeating-linear-gradient(22deg,transparent 0 8px,rgba(255,240,205,.025) 9px 10px);
+  --bj-tinte:rgba(75,44,16,.42);
 }
 .blackjack.tema-perla{
   --bj-luz:rgba(255,255,255,.62);--bj-pano-a:#e6e2d8;--bj-pano-b:#a7a69f;
@@ -467,9 +494,10 @@ const ESTILOS = `
   --bj-bg-a:#dedbd3;--bj-bg-b:#858882;--bj-text:#171b1a;
   --bj-btn-a:#fff;--bj-btn-b:#aeb3b0;--bj-btn-ink:#171b1a;
   --bj-motivo:linear-gradient(135deg,rgba(255,255,255,.1),transparent 40%,rgba(35,44,42,.035));
+  --bj-tinte:rgba(224,220,209,.62);
 }
 .bj-ambiente,.bj-vineta{position:absolute;inset:0;pointer-events:none;z-index:0}
-.bj-vineta{z-index:8;box-shadow:inset 0 0 160px rgba(0,0,0,.58)}
+.bj-vineta{z-index:8;box-shadow:inset 0 0 72px rgba(0,0,0,.5),inset 0 -72px 80px rgba(0,0,0,.28)}
 .bj-ambiente{opacity:var(--bj-ambiente);overflow:hidden}
 .bj-ambiente i{position:absolute;width:34vw;height:34vw;border-radius:50%;filter:blur(70px);background:var(--bj-luz);animation:bj-flotar 11s ease-in-out infinite alternate}
 .bj-ambiente i:nth-child(1){left:-12%;top:-18%}.bj-ambiente i:nth-child(2){right:-12%;top:2%;animation-delay:-4s}.bj-ambiente i:nth-child(3){left:28%;bottom:-32%;animation-delay:-7s}.bj-ambiente i:nth-child(4){right:20%;bottom:-26%;animation-delay:-2s}
@@ -477,42 +505,39 @@ const ESTILOS = `
 .bj-ambiente b:nth-of-type(1){left:8%;top:16%}.bj-ambiente b:nth-of-type(2){left:2%;top:48%;animation-delay:-2s}
 @keyframes bj-flotar{to{transform:translate(8vw,5vh) scale(1.18)}}
 @keyframes bj-destello{50%{opacity:.08;transform:scale(.5)}}
-.bj-zona{position:absolute;z-index:2;width:max-content;max-width:94vw;text-align:center}
-.bj-nombre{text-align:left}
-.bj-nombre strong{display:block;margin-top:3px;font-size:19px;font-weight:560;letter-spacing:-.025em;color:var(--bj-text)}
-.bj-brand{font-weight:750;letter-spacing:.28em;font-size:10px;color:var(--bj-oro);text-transform:uppercase}
+.bj-zona{position:absolute;z-index:10;width:max-content;max-width:94%;text-align:center}
+.bj-nombre{display:flex;align-items:center;gap:8px;text-align:center;filter:drop-shadow(0 4px 6px #000)}
+.bj-nombre strong{display:block;font-family:"Iowan Old Style","Baskerville",Georgia,serif;font-size:clamp(22px,7vw,34px);font-weight:800;line-height:.86;letter-spacing:-.055em;color:#f0d89e;text-transform:uppercase;text-shadow:0 2px 0 #42270e,0 0 13px rgba(225,176,79,.38)}
+.bj-brand{font-weight:750;letter-spacing:.34em;font-size:7px;color:#fff0c1;text-transform:uppercase;margin-top:5px}
+.bj-emblema{width:32px;height:38px;display:grid;place-items:center;font-family:Georgia,serif;font-size:23px;color:#1b1309;background:linear-gradient(145deg,#fff0b3,#9e6726);clip-path:polygon(50% 0,100% 48%,82% 100%,18% 100%,0 48%)}
 .bj-marcada{outline:1px dashed var(--bj-oro);outline-offset:8px;cursor:grab;touch-action:none;z-index:6}
+.bj-menu{position:absolute;z-index:30;left:13px;top:13px;width:38px;height:38px;border-radius:50%;border:1px solid rgba(225,181,95,.7);background:linear-gradient(#302113,#0a0806);box-shadow:0 5px 16px #000,inset 0 0 0 2px rgba(0,0,0,.8);display:grid;place-content:center;gap:4px;cursor:pointer}
+.bj-menu i{display:block;width:17px;height:2px;border-radius:2px;background:#e3bc69;transition:.2s ease}
+.bj-menu.abierto i:first-child{transform:translateY(6px) rotate(45deg)}.bj-menu.abierto i:nth-child(2){opacity:0}.bj-menu.abierto i:last-child{transform:translateY(-6px) rotate(-45deg)}
+.bj-menu-panel{position:absolute;z-index:29;left:13px;top:58px;width:190px;padding:15px 16px;border-radius:14px;border:1px solid rgba(218,176,91,.5);background:linear-gradient(145deg,rgba(28,20,12,.97),rgba(7,7,6,.97));box-shadow:0 18px 42px rgba(0,0,0,.7);display:flex;flex-direction:column;gap:7px;font-size:11px;color:#dfcda9}
+.bj-menu-panel b{font-family:Georgia,serif;color:#f2d58e;font-size:15px}.bj-menu-panel small{padding-top:7px;border-top:1px solid rgba(255,255,255,.1);color:#9b896b;letter-spacing:.18em;text-transform:uppercase}
 .bj-saldo{
   background:linear-gradient(180deg, rgba(18,14,12,.92), rgba(6,5,4,.94));
   border:1px solid var(--bj-oro-suave);padding:8px 14px;border-radius:999px;
-  font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#cbb992;
+  font-size:8px;letter-spacing:.13em;text-transform:uppercase;color:#cbb992;
   box-shadow:inset 0 1px 0 rgba(255,255,255,.05), 0 10px 24px rgba(0,0,0,.45);
 }
-.bj-saldo b{color:#f3e2b8;font-weight:750;letter-spacing:0;font-size:15px;margin-left:6px}
+.bj-saldo b{display:block;color:#fff1c9;font-weight:800;letter-spacing:.03em;font-size:14px;margin:2px 0 0}
 .bj-pano{
-  position:absolute;z-index:0;transform:translate(-50%,-50%);box-sizing:border-box;overflow:hidden;
-  border-radius:46% 46% 18px 18px;
-  background:
-    radial-gradient(ellipse at 50% 38%, rgba(255,255,255,.045), transparent 24%),
-    radial-gradient(ellipse at 50% 46%, rgba(0,0,0,.18), transparent 42%),
-    radial-gradient(ellipse at 50% 78%, var(--bj-pano-a), var(--bj-pano-b) 74%);
-  border:16px solid var(--bj-madera);
-  box-shadow:
-    inset 0 0 0 2px var(--bj-oro),
-    inset 0 0 0 11px #120e0c,
-    inset 0 0 120px rgba(0,0,0,.72),
-    0 30px 60px rgba(0,0,0,.6);
+  position:absolute;z-index:1;transform:translate(-50%,-50%);box-sizing:border-box;overflow:visible;
+  border:0;background:none;box-shadow:none;pointer-events:none;
 }
-.bj-pano::before{content:"";position:absolute;inset:26px;border-radius:40% 40% 10px 10px;background:var(--bj-motivo);background-size:32px 32px;opacity:.8;pointer-events:none;mask-image:linear-gradient(to bottom,black,transparent 86%)}
-.bj-reglas{position:absolute;left:50%;top:10%;transform:translateX(-50%);display:flex;align-items:center;gap:14px;white-space:nowrap;color:var(--bj-oro);opacity:.6;font-size:9px;font-weight:650;letter-spacing:.22em;text-transform:uppercase}
+.bj-pano::before{display:none}
+.bj-reglas{position:absolute;left:50%;top:42%;transform:translateX(-50%);display:flex;align-items:center;gap:8px;white-space:nowrap;color:#c99e52;opacity:.78;font-family:Georgia,serif;font-size:7px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;text-shadow:0 2px 5px #00150f}
 .bj-reglas i{font-style:normal;opacity:.55}
-.bj-pano.bj-marcada{cursor:grab;z-index:1}
+.bj-pano.bj-marcada{cursor:grab;z-index:1;pointer-events:auto}
 .bj-riel{
   pointer-events:none;position:absolute;inset:16px 18px 14px;
   border-radius:42% 42% 12px 12px;
   border:1px solid var(--bj-oro-suave);
   box-shadow:inset 0 0 50px rgba(0,0,0,.35);
 }
+.bj-riel,.bj-esquina{display:none}
 .bj-esquina{
   pointer-events:none;position:absolute;width:9px;height:9px;border:1px solid var(--bj-oro);opacity:.7;
   transform:rotate(45deg);box-shadow:0 0 8px rgba(0,0,0,.6);
@@ -522,12 +547,13 @@ const ESTILOS = `
 .bj-esquina.c{bottom:12%;left:7%}
 .bj-esquina.d{bottom:12%;right:7%}
 .bj-label{
-  display:inline-block;margin-bottom:12px;padding:4px 12px;border-radius:999px;
-  font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#e7d7b0;
-  background:rgba(0,0,0,.55);border:1px solid var(--bj-oro-suave);
+  display:inline-flex;align-items:center;gap:8px;margin-bottom:8px;padding:4px 7px 4px 11px;border-radius:999px;
+  font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:#e7d7b0;
+  background:linear-gradient(180deg,rgba(35,24,14,.92),rgba(7,7,6,.9));border:1px solid rgba(211,169,84,.58);box-shadow:0 4px 12px rgba(0,0,0,.42);
 }
-.bj-mano{display:flex;justify-content:center;min-height:124px;perspective:900px}
-.bj-mano .bj-carta,.bj-mano .bj-flip{margin:0 -6px}
+.bj-label b{display:grid;place-items:center;min-width:23px;height:23px;border-radius:50%;background:#080807;border:1px solid rgba(228,188,106,.5);color:#fff5d8;font-size:12px;letter-spacing:0}
+.bj-mano{display:flex;justify-content:center;min-height:100px;perspective:900px}
+.bj-mano .bj-carta,.bj-mano .bj-flip{margin:0 -5px}
 .bj-carta{
   width:var(--bj-carta-w);height:var(--bj-carta-h);border-radius:11px;padding:8px 8px 6px;box-sizing:border-box;
   text-align:left;display:flex;flex-direction:column;justify-content:space-between;
@@ -609,25 +635,28 @@ const ESTILOS = `
 }
 .bj-centro{display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center}
 .bj-aro{
-  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
-  color:rgba(231,201,138,.7);letter-spacing:.22em;text-transform:uppercase;font-size:10px;
+  display:none;
 }
 .bj-aro small{font-size:9px;letter-spacing:.22em}.bj-aro b{font-size:17px;letter-spacing:-.02em;color:var(--bj-oro)}
-.bj-resultado{min-height:24px;font-weight:680;color:var(--bj-oro);letter-spacing:-.01em;text-shadow:0 2px 14px rgba(0,0,0,.75)}
-.bj-bottom{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap}
+.bj-resultado{min-height:20px;padding:5px 12px;border-radius:999px;background:rgba(0,18,13,.46);font-size:11px;font-weight:700;color:#f0cf83;letter-spacing:.01em;text-shadow:0 2px 10px #000;box-shadow:inset 0 0 0 1px rgba(222,180,91,.16)}
+.bj-bottom{display:block;width:min(96%,470px)}
+.bj-control-stack{width:100%;display:flex;flex-direction:column;align-items:center;gap:8px}
+.bj-actionbar{width:100%;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.bj-actionbar.solo{grid-template-columns:minmax(180px,260px);justify-content:center}
 .bj-apuesta{
   display:flex;align-items:center;gap:8px;
-  background:rgba(8,6,5,.72);border:1px solid rgba(198,161,90,.3);
-  padding:8px 14px;border-radius:999px;color:#e7d7b0;letter-spacing:.08em;font-size:12px;text-transform:uppercase;
+  background:linear-gradient(180deg,rgba(34,23,14,.96),rgba(8,7,6,.96));border:1px solid rgba(217,174,86,.58);
+  padding:4px 7px;border-radius:999px;color:#e7d7b0;letter-spacing:.12em;font-size:8px;text-transform:uppercase;box-shadow:0 7px 18px rgba(0,0,0,.52),inset 0 1px rgba(255,255,255,.06);
 }
-.bj-apuesta input{width:110px;background:transparent;color:#fff8ea;border:0;font-weight:700;font-size:16px;letter-spacing:0}
-.bj-stepper{gap:5px}.bj-stepper span{margin:0 4px}.bj-stepper button{min-width:30px!important;width:30px;height:30px;padding:0!important;border-radius:50%!important;background:rgba(255,255,255,.08)!important;color:var(--bj-oro)!important;box-shadow:inset 0 0 0 1px var(--bj-oro-suave)!important;font-size:15px!important}.bj-stepper button::after{display:none}
+.bj-apuesta input{width:74px;padding:0;background:transparent;color:#fff8ea;border:0;text-align:center;font-weight:800;font-size:14px;letter-spacing:.02em;appearance:textfield}.bj-apuesta input::-webkit-inner-spin-button{display:none}
+.bj-stepper{gap:5px}.bj-stepper span{margin:0 2px}.bj-stepper button{min-width:27px!important;width:27px;height:27px;padding:0!important;border-radius:50%!important;background:linear-gradient(#f1ce81,#9a6726)!important;color:#201309!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.72),0 2px 5px #000!important;font-size:16px!important}.bj-stepper button::after{display:none}
 .bj-bottom button{
-  position:relative;overflow:hidden;border:0;border-radius:999px;cursor:pointer;min-width:120px;
+  position:relative;overflow:hidden;border:1px solid rgba(229,184,91,.65);border-radius:999px;cursor:pointer;min-width:0;
   background:linear-gradient(180deg,var(--bj-btn-a),var(--bj-btn-b));
-  color:var(--bj-btn-ink);padding:12px 22px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;font-size:12px;
-  box-shadow:0 10px 24px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.55);transition:transform .18s ease,filter .18s ease,box-shadow .18s ease;
+  color:var(--bj-btn-ink);padding:10px 7px;font-weight:850;letter-spacing:.04em;text-transform:uppercase;font-size:10px;white-space:nowrap;
+  box-shadow:0 7px 16px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.55),inset 0 0 0 2px rgba(20,12,5,.34);transition:transform .18s ease,filter .18s ease,box-shadow .18s ease;
 }
+.bj-bottom button > span{display:inline-grid;place-items:center;min-width:17px;height:17px;margin-right:3px;border-radius:50%;background:rgba(0,0,0,.23);font-size:10px}
 .bj-bottom button::after{content:"";position:absolute;inset:0;background:linear-gradient(110deg,transparent 20%,rgba(255,255,255,.5) 48%,transparent 72%);transform:translateX(-140%);transition:transform .55s ease}
 .bj-bottom button:hover:not(:disabled){transform:translateY(-2px);filter:saturate(1.12);box-shadow:0 15px 30px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.65)}
 .bj-bottom button:hover:not(:disabled)::after{transform:translateX(140%)}
@@ -636,6 +665,10 @@ const ESTILOS = `
   background:linear-gradient(180deg,#2a2118,#14110e);color:#e7c98a;
   box-shadow:inset 0 0 0 1px rgba(198,161,90,.55);
 }
+.bj-bottom button.accion-pedir{background:linear-gradient(180deg,#36533d,#15251a);color:#f0e5c9}
+.bj-bottom button.accion-plantar{background:linear-gradient(180deg,#8d2830,#3c0d12);color:#ffe9d2}
+.bj-bottom button.accion-doblar{background:linear-gradient(180deg,#4b351d,#1c1209);color:#f5d894}
+.bj-bottom button.accion-repartir{background:linear-gradient(180deg,#e2be6c,#966120);color:#1e1207}
 .bj-bottom button:disabled{opacity:.4;cursor:not-allowed}
 .resultado-gano .bj-resultado{animation:bj-ganar .8s ease both}.resultado-empate .bj-resultado{color:#d7e6ea}.resultado-perdio .bj-resultado{color:#d69a9a}
 .resultado-gano .bj-aro{animation:bj-premio 1.6s ease-in-out infinite}
@@ -646,10 +679,13 @@ const ESTILOS = `
 .mov-reducido *{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
 .bj-error{color:#ffb4b4;text-align:center;margin:0;width:100%}
 @media(max-width:600px){
-  .bj-pano{border-width:10px}
   .bj-reglas{font-size:7px;gap:7px;letter-spacing:.12em}
-  .bj-bottom{width:min(94vw,420px);gap:8px}.bj-bottom button{min-width:100px;padding:11px 15px}
+  .bj-bottom{width:94%}.bj-bottom button{padding:10px 5px}
   .bj-vineta{box-shadow:inset 0 0 80px rgba(0,0,0,.48)}
+}
+@media(max-height:650px){
+  .bj-nombre strong{font-size:22px}.bj-emblema{width:27px;height:32px;font-size:19px}
+  .bj-control-stack{gap:5px}.bj-bottom button{padding-block:8px}
 }
 `;
 

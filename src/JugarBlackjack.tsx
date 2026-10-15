@@ -82,24 +82,28 @@ export function JugarBlackjack({ datos, saldoInicial, slug, token }: { datos: Da
       ambiente={piel.ambiente}
       mostrarNombre={nombreEnMesa(juego)}
       error={error}
-      acciones={activa ? (
-        <>
-          <button className="sec" disabled={cargando} onClick={() => accion('pedir')}><span aria-hidden>＋</span> Pedir</button>
-          <button disabled={cargando} onClick={() => accion('plantar')}><span aria-hidden>◆</span> Plantarse</button>
-          {partida?.puedeDoblar && <button className="sec" disabled={cargando || saldo < partida.apuesta} onClick={() => accion('doblar')}><span aria-hidden>×2</span> Doblar</button>}
-        </>
-      ) : (
-        <>
+      acciones={(
+        <div className="bj-control-stack">
           {!(fichas.length > 0 && fichasSinCajaDe(juego)) && (
             <label className="bj-apuesta bj-stepper">
-              <button type="button" aria-label="Bajar apuesta" onClick={() => setApuesta((v) => Math.max(Number(juego.min_bet), v - Number(juego.paso_apuesta || 100)))}>−</button>
+              <button type="button" aria-label="Bajar apuesta" disabled={!!activa || cargando} onClick={() => setApuesta((v) => Math.max(Number(juego.min_bet), v - Number(juego.paso_apuesta || 100)))}>−</button>
               <span>Apuesta</span>
-              <input type="number" min={juego.min_bet} max={juego.max_bet} step={juego.paso_apuesta || 100} value={apuesta} onChange={(e) => setApuesta(Number(e.target.value))} />
-              <button type="button" aria-label="Subir apuesta" onClick={() => setApuesta((v) => Math.min(Number(juego.max_bet), v + Number(juego.paso_apuesta || 100)))}>＋</button>
+              <input aria-label="Monto de la apuesta" type="number" disabled={!!activa || cargando} min={juego.min_bet} max={juego.max_bet} step={juego.paso_apuesta || 100} value={apuesta} onChange={(e) => setApuesta(Number(e.target.value))} />
+              <button type="button" aria-label="Subir apuesta" disabled={!!activa || cargando} onClick={() => setApuesta((v) => Math.min(Number(juego.max_bet), v + Number(juego.paso_apuesta || 100)))}>＋</button>
             </label>
           )}
-          <button disabled={cargando || saldo < apuesta} onClick={iniciar}><span aria-hidden>♠</span> {cargando ? 'Repartiendo…' : 'Repartir'}</button>
-        </>
+          {activa ? (
+            <div className="bj-actionbar">
+              <button className="accion-pedir" disabled={cargando} onClick={() => accion('pedir')}><span aria-hidden>♣</span>Pedir</button>
+              <button className="accion-plantar" disabled={cargando} onClick={() => accion('plantar')}><span aria-hidden>✋</span>Plantarse</button>
+              <button className="accion-doblar" disabled={cargando || !partida?.puedeDoblar || saldo < partida.apuesta} onClick={() => accion('doblar')}><span aria-hidden>×2</span>Doblar</button>
+            </div>
+          ) : (
+            <div className="bj-actionbar solo">
+              <button className="accion-repartir" disabled={cargando || saldo < apuesta} onClick={iniciar}><span aria-hidden>♠</span>{cargando ? 'Repartiendo…' : 'Repartir'}</button>
+            </div>
+          )}
+        </div>
       )}
     >
       <FichasEnMesa juego={juego} host={host} fichas={fichas} apuesta={apuesta} onElegir={setApuesta} bloqueado={!!activa || cargando} />

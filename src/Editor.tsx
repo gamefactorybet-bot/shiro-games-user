@@ -2657,6 +2657,10 @@ function SeccionBlackjack({ juego, onCampo }: {
     const url = await subirArchivo(file, `blackjack/${juego.id}`);
     if (url) aplicar((prev) => ({ ...prev, reversoUrl: url }));
   };
+  const ponerFondo = async (file: File) => {
+    const url = await subirArchivo(file, `blackjack/${juego.id}`);
+    if (url) aplicar((prev) => ({ ...prev, fondoUrl: url }));
+  };
   const ponerCara = async (clave: string, file: File) => {
     const url = await subirArchivo(file, `blackjack/${juego.id}`);
     if (!url) return;
@@ -2686,6 +2690,21 @@ function SeccionBlackjack({ juego, onCampo }: {
           <label>Iluminación ambiental <b>{cfg.ambiente}%</b><input type="range" min="0" max="100" value={cfg.ambiente} onChange={(e) => setCfg({ ...cfg, ambiente: Number(e.target.value) })} onPointerUp={(e) => guardar({ ...cfg, ambiente: Number((e.target as HTMLInputElement).value) })} /></label>
         </div>
         <div style={{ marginTop: 18 }}>
+          <b style={{ display: 'block', fontSize: 13, marginBottom: 9 }}>Fondo de la mesa</b>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 18 }}>
+            <label style={{
+              width: 72, height: 108, borderRadius: 10, border: '1px dashed var(--border)', overflow: 'hidden',
+              background: `center/cover no-repeat url("${cfg.fondoUrl || '/blackjack/royal-emerald-table-v1.webp'}")`,
+              display: 'grid', placeItems: 'center', cursor: 'pointer', flexShrink: 0,
+            }} title="Cambiar fondo de mesa">
+              <input type="file" accept="image/*" hidden onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ''; if (f) ponerFondo(f); }} />
+            </label>
+            <div>
+              <b style={{ fontSize: 13 }}>{cfg.fondoUrl ? 'Fondo personalizado' : 'Royal Emerald incluido'}</b>
+              <p className="hint" style={{ margin: '3px 0 7px' }}>Usá una imagen vertical, idealmente 1024 × 1536 px. Los elementos del juego se colocan encima.</p>
+              {cfg.fondoUrl && <button type="button" style={{ fontSize: 11 }} onClick={() => guardar({ ...cfg, fondoUrl: null })}>Volver al fondo incluido</button>}
+            </div>
+          </div>
           <b style={{ display: 'block', fontSize: 13, marginBottom: 9 }}>Colección de mesas</b>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(150px,1fr))', gap: 9 }}>
             {TEMAS_BLACKJACK.map((t) => (

@@ -13,17 +13,18 @@ export const CFG_DEFAULT = {
 
 /** Dónde vive cada pieza de la mesa y qué tamaño tiene. % de la pantalla. */
 export const MESA_DEFAULT = {
+  version: 2,
   tema: 'noche',
-  cartaAncho: 82,
-  cartaAlto: 118,
-  pano: { x: 50, y: 46, ancho: 92, alto: 70 },
-  nombre: { x: 18, y: 7, escala: 100 },
-  saldo: { x: 84, y: 7, escala: 100 },
-  mazo: { x: 86, y: 22, escala: 100 },
-  crupier: { x: 50, y: 30, escala: 100 },
-  aro: { x: 50, y: 48, escala: 100 },
-  jugador: { x: 50, y: 66, escala: 100 },
-  controles: { x: 50, y: 92, escala: 100 },
+  cartaAncho: 68,
+  cartaAlto: 96,
+  pano: { x: 50, y: 47, ancho: 94, alto: 58 },
+  nombre: { x: 50, y: 9, escala: 100 },
+  saldo: { x: 82, y: 6, escala: 92 },
+  mazo: { x: 84, y: 30, escala: 82 },
+  crupier: { x: 50, y: 29, escala: 100 },
+  aro: { x: 50, y: 69, escala: 100 },
+  jugador: { x: 50, y: 55, escala: 100 },
+  controles: { x: 50, y: 80, escala: 100 },
 };
 
 const TEMAS = new Set([
@@ -57,18 +58,22 @@ function panoDe(v) {
 export function mesaDe(raw) {
   const m = obj(raw);
   const D = MESA_DEFAULT;
+  // v2 cambia la mesa apaisada original por el escenario vertical. Las mesas
+  // ya guardadas migran una sola vez; desde ahí vuelven a ser editables.
+  const layout = Number(m.version) >= 2 ? m : {};
   return {
+    version: 2,
     tema: TEMAS.has(m.tema) ? m.tema : D.tema,
-    cartaAncho: clamp(Math.round(num(m.cartaAncho, D.cartaAncho)), 48, 150),
-    cartaAlto: clamp(Math.round(num(m.cartaAlto, D.cartaAlto)), 68, 210),
-    pano: panoDe(m.pano),
-    nombre: zona(m.nombre, D.nombre),
-    saldo: zona(m.saldo, D.saldo),
-    mazo: zona(m.mazo, D.mazo),
-    crupier: zona(m.crupier, D.crupier),
-    aro: zona(m.aro, D.aro),
-    jugador: zona(m.jugador, D.jugador),
-    controles: zona(m.controles, D.controles),
+    cartaAncho: clamp(Math.round(num(layout.cartaAncho, D.cartaAncho)), 48, 150),
+    cartaAlto: clamp(Math.round(num(layout.cartaAlto, D.cartaAlto)), 68, 210),
+    pano: panoDe(layout.pano),
+    nombre: zona(layout.nombre, D.nombre),
+    saldo: zona(layout.saldo, D.saldo),
+    mazo: zona(layout.mazo, D.mazo),
+    crupier: zona(layout.crupier, D.crupier),
+    aro: zona(layout.aro, D.aro),
+    jugador: zona(layout.jugador, D.jugador),
+    controles: zona(layout.controles, D.controles),
   };
 }
 
@@ -84,6 +89,7 @@ function cartasDe(v) {
 export function cfgConDefaults(cfg) {
   const c = obj(cfg);
   const reverso = typeof c.reversoUrl === 'string' ? c.reversoUrl.trim() : '';
+  const fondo = typeof c.fondoUrl === 'string' ? c.fondoUrl.trim() : '';
   return {
     mazos: clamp(Math.round(Number(c.mazos) || CFG_DEFAULT.mazos), 1, 8),
     dealerSoft17: c.dealerSoft17 === 'pedir' ? 'pedir' : 'plantar',
@@ -93,6 +99,7 @@ export function cfgConDefaults(cfg) {
     movimiento: ['cinematico', 'rapido', 'reducido'].includes(c.movimiento) ? c.movimiento : CFG_DEFAULT.movimiento,
     ambiente: clamp(Math.round(num(c.ambiente, CFG_DEFAULT.ambiente)), 0, 100),
     mostrarNombre: c.mostrarNombre !== false,
+    fondoUrl: fondo || null,
     reversoUrl: reverso || null,
     cartas: cartasDe(c.cartas),
     mesa: mesaDe(c.mesa),

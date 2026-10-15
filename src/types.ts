@@ -958,6 +958,7 @@ export interface PanoBlackjack {
 
 /** Posición y tamaño de la mesa de 21. Porcentajes de la pantalla. */
 export interface DisenoBlackjack {
+  version: number;
   tema: TemaBlackjack;
   cartaAncho: number;
   cartaAlto: number;
@@ -984,6 +985,8 @@ export interface BlackjackCfg {
   ambiente: number;
   /** false oculta la marca y el nombre en la mesa real, no solo en la previa. */
   mostrarNombre: boolean;
+  /** Imagen vertical que cubre el escenario completo. Vacío = mesa Royal Emerald incluida. */
+  fondoUrl: string | null;
   /** Una sola imagen para el dorso de todas las cartas. Vacío = dibujo. */
   reversoUrl: string | null;
   /** Cara opcional por carta. Clave `A♠`, `10♥`, etc. */
