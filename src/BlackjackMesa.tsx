@@ -615,11 +615,8 @@ const ESTILOS = `
 }
 .bj-centro{display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center}
 .bj-aro{
-  width:168px;height:64px;border-radius:50%;
-  border:1px dashed rgba(198,161,90,.55);
   display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
   color:rgba(231,201,138,.7);letter-spacing:.22em;text-transform:uppercase;font-size:10px;
-  box-shadow:inset 0 0 0 6px rgba(0,0,0,.15);
 }
 .bj-aro small{font-size:9px;letter-spacing:.22em}.bj-aro b{font-size:17px;letter-spacing:-.02em;color:var(--bj-oro)}
 .bj-resultado{min-height:24px;font-weight:680;color:var(--bj-oro);letter-spacing:-.01em;text-shadow:0 2px 14px rgba(0,0,0,.75)}
@@ -647,7 +644,7 @@ const ESTILOS = `
 }
 .bj-bottom button:disabled{opacity:.4;cursor:not-allowed}
 .resultado-gano .bj-resultado{animation:bj-ganar .8s ease both}.resultado-empate .bj-resultado{color:#d7e6ea}.resultado-perdio .bj-resultado{color:#d69a9a}
-.resultado-gano .bj-aro{animation:bj-premio 1.6s ease-in-out infinite;box-shadow:0 0 42px var(--bj-oro-suave),inset 0 0 0 6px rgba(0,0,0,.15)}
+.resultado-gano .bj-aro{animation:bj-premio 1.6s ease-in-out infinite}
 .resultado-gano .bj-ambiente b{animation:bj-lluvia 1.8s ease-out infinite;opacity:.9}
 @keyframes bj-ganar{0%{opacity:0;transform:scale(.8)}65%{transform:scale(1.08)}100%{opacity:1;transform:none}}
 @keyframes bj-premio{50%{filter:brightness(1.45);transform:scale(1.035)}}
@@ -656,7 +653,6 @@ const ESTILOS = `
 .bj-error{color:#ffb4b4;text-align:center;margin:0;width:100%}
 @media(max-width:600px){
   .bj-pano{border-width:10px}
-  .bj-aro{width:120px;height:48px}
   .bj-pozo{width:130px;height:54px}
   .bj-reglas{font-size:7px;gap:7px;letter-spacing:.12em}
   .bj-bottom{width:min(94vw,420px);gap:8px}.bj-bottom button{min-width:100px;padding:11px 15px}
