@@ -2653,8 +2653,22 @@ function SeccionBlackjack({ juego, onCampo }: {
           <label>Blackjack natural<select value={cfg.pagoBlackjack} onChange={(e) => guardar({ ...cfg, pagoBlackjack: Number(e.target.value) })}><option value="1.5">Paga 3:2</option><option value="1.2">Paga 6:5</option></select></label>
           <label>Soft 17 del crupier<select value={cfg.dealerSoft17} onChange={(e) => guardar({ ...cfg, dealerSoft17: e.target.value as 'plantar' | 'pedir' })}><option value="plantar">Se planta</option><option value="pedir">Pide carta</option></select></label>
           <label style={{ display: 'flex', gap: 8, alignItems: 'center', paddingTop: 22 }}><input type="checkbox" checked={cfg.permitirDoblar} onChange={(e) => guardar({ ...cfg, permitirDoblar: e.target.checked })} /> Permitir doblar</label>
-          <label>Temática<select value={cfg.mesa.tema} onChange={(e) => guardar({ ...cfg, mesa: { ...cfg.mesa, tema: e.target.value as typeof cfg.mesa.tema } })}>{TEMAS_BLACKJACK.map((t) => <option key={t.id} value={t.id}>{t.nombre}</option>)}</select></label>
           <label style={{ display: 'flex', gap: 8, alignItems: 'center', paddingTop: 22 }}><input type="checkbox" checked={mostrarNombre} onChange={(e) => cambiarNombre(e.target.checked)} /> Mostrar el nombre en la mesa</label>
+          <label style={{ display: 'flex', gap: 8, alignItems: 'center', paddingTop: 22 }}><input type="checkbox" checked={cfg.sonido} onChange={(e) => guardar({ ...cfg, sonido: e.target.checked })} /> Sonido de mesa</label>
+          <label>Movimiento<select value={cfg.movimiento} onChange={(e) => guardar({ ...cfg, movimiento: e.target.value as BlackjackCfg['movimiento'] })}><option value="cinematico">Cinematográfico</option><option value="rapido">Rápido</option><option value="reducido">Reducido</option></select></label>
+          <label>Iluminación ambiental <b>{cfg.ambiente}%</b><input type="range" min="0" max="100" value={cfg.ambiente} onChange={(e) => setCfg({ ...cfg, ambiente: Number(e.target.value) })} onPointerUp={(e) => guardar({ ...cfg, ambiente: Number((e.target as HTMLInputElement).value) })} /></label>
+        </div>
+        <div style={{ marginTop: 18 }}>
+          <b style={{ display: 'block', fontSize: 13, marginBottom: 9 }}>Colección de mesas</b>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(150px,1fr))', gap: 9 }}>
+            {TEMAS_BLACKJACK.map((t) => (
+              <button key={t.id} type="button" onClick={() => guardar({ ...cfg, mesa: { ...cfg.mesa, tema: t.id } })}
+                style={{ textAlign: 'left', padding: 10, borderRadius: 12, border: cfg.mesa.tema === t.id ? '1px solid var(--accent)' : '1px solid var(--border)', background: cfg.mesa.tema === t.id ? 'var(--accent-soft)' : 'var(--surface-alt)' }}>
+                <span style={{ display: 'flex', height: 36, borderRadius: 8, overflow: 'hidden', marginBottom: 8, boxShadow: 'inset 0 0 0 1px rgba(255,255,255,.12)' }}><i style={{ flex: 1, background: t.colores[0] }} /><i style={{ flex: 1, background: t.colores[1] }} /></span>
+                <b style={{ display: 'block', fontSize: 12 }}>{t.nombre}</b><small className="hint">{t.subtitulo}</small>
+              </button>
+            ))}
+          </div>
         </div>
         <p className="hint" style={{ margin: '12px 0 0' }}>
           Para mover el paño, las manos, el mazo, el saldo y los botones, y para cambiar el tamaño, abrí <b>Vista previa → ⚙ Ajustar</b>.

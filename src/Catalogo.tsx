@@ -3,7 +3,7 @@ import { supabase } from './supabase.ts';
 import {
   Preview, PreviewMines, PreviewRuleta, PreviewRuletaBotones,
   PreviewCrash, PreviewPlinko, PreviewRaspadita, PreviewLimbo,
-  PreviewDice, PreviewKeno, PreviewSieteUd, PreviewTorre,
+  PreviewDice, PreviewKeno, PreviewSieteUd, PreviewTorre, PreviewBlackjack,
 } from './previews-lazy.tsx';
 import type { Juego, Simbolo, Sonido, Efecto } from './types.ts';
 
@@ -28,6 +28,7 @@ export function Catalogo() {
   const [previewKeno, setPreviewKeno] = useState<Juego | null>(null);
   const [previewTorre, setPreviewTorre] = useState<Juego | null>(null);
   const [previewSieteUd, setPreviewSieteUd] = useState<Juego | null>(null);
+  const [previewBlackjack, setPreviewBlackjack] = useState<Juego | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -54,6 +55,7 @@ export function Catalogo() {
     if (juego.motor.startsWith('keno')) { setPreviewKeno(juego); return; }
     if (juego.motor.startsWith('torre')) { setPreviewTorre(juego); return; }
     if (juego.motor.startsWith('sieteud')) { setPreviewSieteUd(juego); return; }
+    if (juego.motor.startsWith('blackjack')) { setPreviewBlackjack(juego); return; }
     if (juego.motor === 'ruleta') {
       const { data } = await supabase.from('simbolos').select('*').eq('juego_id', juego.id).order('orden');
       setPreviewRuleta({ juego, simbolos: (data as Simbolo[]) || [] });
@@ -123,6 +125,7 @@ export function Catalogo() {
         {previewKeno && <PreviewKeno juego={previewKeno} onClose={() => setPreviewKeno(null)} />}
         {previewTorre && <PreviewTorre juego={previewTorre} onClose={() => setPreviewTorre(null)} />}
         {previewSieteUd && <PreviewSieteUd juego={previewSieteUd} onClose={() => setPreviewSieteUd(null)} />}
+        {previewBlackjack && <PreviewBlackjack juego={previewBlackjack} onClose={() => setPreviewBlackjack(null)} />}
       </Suspense>
     </div>
   );

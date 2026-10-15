@@ -68,11 +68,14 @@ export function AjusteBlackjack({ juego, mesa, onChange, elem, onElem, onGuardad
         Mostrar el nombre en la mesa
       </label>
 
-      <div className="grupo-nav" style={{ marginBottom: 10 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: 6, marginBottom: 12 }}>
         {TEMAS_BLACKJACK.map((t) => (
-          <button key={t.id} type="button" className={`grupo-btn ${mesa.tema === t.id ? 'on' : ''}`}
-            style={{ flex: 1, justifyContent: 'center', fontSize: 12 }}
-            onClick={() => onChange({ ...mesa, tema: t.id })}>{t.nombre}</button>
+          <button key={t.id} type="button" className={mesa.tema === t.id ? 'on' : ''}
+            style={{ padding: 7, textAlign: 'left', borderColor: mesa.tema === t.id ? 'var(--accent)' : undefined }}
+            onClick={() => onChange({ ...mesa, tema: t.id })}>
+            <span style={{ display: 'flex', height: 10, borderRadius: 5, overflow: 'hidden', marginBottom: 4 }}><i style={{ flex: 1, background: t.colores[0] }} /><i style={{ flex: 1, background: t.colores[1] }} /></span>
+            <small>{t.nombre}</small>
+          </button>
         ))}
       </div>
 

@@ -5,11 +5,14 @@ export const CFG_DEFAULT = {
   dealerSoft17: 'plantar', // 'plantar' | 'pedir'
   pagoBlackjack: 1.5,
   permitirDoblar: true,
+  sonido: true,
+  movimiento: 'cinematico',
+  ambiente: 80,
 };
 
 /** Dónde vive cada pieza de la mesa y qué tamaño tiene. % de la pantalla. */
 export const MESA_DEFAULT = {
-  tema: 'noche', // 'noche' | 'burdeos' | 'carbon' | 'caoba' | 'zafiro'
+  tema: 'noche',
   cartaAncho: 82,
   cartaAlto: 118,
   pano: { x: 50, y: 46, ancho: 92, alto: 70 },
@@ -22,7 +25,10 @@ export const MESA_DEFAULT = {
   controles: { x: 50, y: 92, escala: 100 },
 };
 
-const TEMAS = new Set(['noche', 'burdeos', 'carbon', 'caoba', 'zafiro']);
+const TEMAS = new Set([
+  'noche', 'burdeos', 'carbon', 'caoba', 'zafiro', 'monaco',
+  'artdeco', 'neon', 'artico', 'imperial', 'havana', 'perla',
+]);
 const clamp = (n, lo, hi) => Math.max(lo, Math.min(hi, n));
 const obj = (v) => (v && typeof v === 'object' && !Array.isArray(v) ? v : {});
 const num = (v, d) => (Number.isFinite(Number(v)) ? Number(v) : d);
@@ -82,6 +88,9 @@ export function cfgConDefaults(cfg) {
     dealerSoft17: c.dealerSoft17 === 'pedir' ? 'pedir' : 'plantar',
     pagoBlackjack: clamp(Number(c.pagoBlackjack) || CFG_DEFAULT.pagoBlackjack, 1, 2),
     permitirDoblar: c.permitirDoblar !== false,
+    sonido: c.sonido !== false,
+    movimiento: ['cinematico', 'rapido', 'reducido'].includes(c.movimiento) ? c.movimiento : CFG_DEFAULT.movimiento,
+    ambiente: clamp(Math.round(num(c.ambiente, CFG_DEFAULT.ambiente)), 0, 100),
     reversoUrl: reverso || null,
     cartas: cartasDe(c.cartas),
     mesa: mesaDe(c.mesa),

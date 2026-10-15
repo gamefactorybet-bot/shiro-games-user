@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import { fetchJson } from './juego/recursos.ts';
 import { cfgBlackjack } from './juego/blackjack.ts';
+import { sonidoBlackjack } from './juego/blackjack-audio.ts';
 import { fichasDe, fichasSinCajaDe } from '../motor/fichas.js';
 import { FichasEnMesa, MesaBlackjack, type CartaBj } from './BlackjackMesa.tsx';
 import type { DatosJuego, Ficha } from './types.ts';
@@ -45,6 +46,7 @@ export function JugarBlackjack({ datos, saldoInicial, slug, token }: { datos: Da
         body: JSON.stringify({ token, slug, ...body }),
       });
       setPartida(r);
+      sonidoBlackjack(r.estado === 'gano' ? 'gano' : r.estado === 'empate' ? 'empate' : r.estado === 'perdio' ? 'perdio' : 'carta', piel.sonido);
       // Sin saldo nuevo (pedir, o perder) el servidor manda null. Number(null)
       // es 0, y la mesa lo mostraba como si el jugador se hubiera quedado en cero.
       if (r.saldo != null && Number.isFinite(Number(r.saldo))) setSaldo(Number(r.saldo));
@@ -53,10 +55,10 @@ export function JugarBlackjack({ datos, saldoInicial, slug, token }: { datos: Da
     } finally {
       setCargando(false);
     }
-  }, [slug, token]);
+  }, [slug, token, piel.sonido]);
 
-  const iniciar = () => llamar({ accion: 'iniciar', apuesta, clientId: crypto.randomUUID() });
-  const accion = (a: 'pedir' | 'plantar' | 'doblar') => partida && llamar({ accion: a, roundId: partida.roundId });
+  const iniciar = () => { sonidoBlackjack('ficha', piel.sonido); void llamar({ accion: 'iniciar', apuesta, clientId: crypto.randomUUID() }); };
+  const accion = (a: 'pedir' | 'plantar' | 'doblar') => { if (!partida) return; sonidoBlackjack(a === 'plantar' ? 'voltear' : 'boton', piel.sonido); void llamar({ accion: a, roundId: partida.roundId }); };
   const activa = partida?.estado === 'en_curso';
   const mensaje = partida && !activa
     ? (partida.estado === 'gano'
@@ -69,28 +71,34 @@ export function JugarBlackjack({ datos, saldoInicial, slug, token }: { datos: Da
       anclaRef={setHost}
       nombre={juego.nombre}
       saldo={dinero(saldo)}
+      apuesta={dinero(apuesta)}
       mensaje={mensaje}
+      resultado={partida?.estado || null}
       dealer={partida?.dealer || []}
       jugador={partida?.jugador || []}
       piel={piel}
       mesa={piel.mesa}
+      movimiento={piel.movimiento}
+      ambiente={piel.ambiente}
       mostrarNombre={(juego.mostrar_nombre ?? true) !== false}
       error={error}
       acciones={activa ? (
         <>
-          <button className="sec" disabled={cargando} onClick={() => accion('pedir')}>Pedir</button>
-          <button disabled={cargando} onClick={() => accion('plantar')}>Plantarse</button>
-          {partida?.puedeDoblar && <button className="sec" disabled={cargando || saldo < partida.apuesta} onClick={() => accion('doblar')}>Doblar</button>}
+          <button className="sec" disabled={cargando} onClick={() => accion('pedir')}><span aria-hidden>＋</span> Pedir</button>
+          <button disabled={cargando} onClick={() => accion('plantar')}><span aria-hidden>◆</span> Plantarse</button>
+          {partida?.puedeDoblar && <button className="sec" disabled={cargando || saldo < partida.apuesta} onClick={() => accion('doblar')}><span aria-hidden>×2</span> Doblar</button>}
         </>
       ) : (
         <>
           {!(fichas.length > 0 && fichasSinCajaDe(juego)) && (
-            <label className="bj-apuesta">
-              Apuesta
+            <label className="bj-apuesta bj-stepper">
+              <button type="button" aria-label="Bajar apuesta" onClick={() => setApuesta((v) => Math.max(Number(juego.min_bet), v - Number(juego.paso_apuesta || 100)))}>−</button>
+              <span>Apuesta</span>
               <input type="number" min={juego.min_bet} max={juego.max_bet} step={juego.paso_apuesta || 100} value={apuesta} onChange={(e) => setApuesta(Number(e.target.value))} />
+              <button type="button" aria-label="Subir apuesta" onClick={() => setApuesta((v) => Math.min(Number(juego.max_bet), v + Number(juego.paso_apuesta || 100)))}>＋</button>
             </label>
           )}
-          <button disabled={cargando} onClick={iniciar}>{cargando ? 'Repartiendo…' : 'Repartir'}</button>
+          <button disabled={cargando || saldo < apuesta} onClick={iniciar}><span aria-hidden>♠</span> {cargando ? 'Repartiendo…' : 'Repartir'}</button>
         </>
       )}
     >

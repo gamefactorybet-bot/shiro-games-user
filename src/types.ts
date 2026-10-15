@@ -938,7 +938,9 @@ export interface EstadoKeno {
 
 export type DificultadTorre = 'facil' | 'media' | 'dificil' | 'experto' | 'maestro' | 'custom';
 
-export type TemaBlackjack = 'noche' | 'burdeos' | 'carbon' | 'caoba' | 'zafiro';
+export type TemaBlackjack =
+  | 'noche' | 'burdeos' | 'carbon' | 'caoba' | 'zafiro' | 'monaco'
+  | 'artdeco' | 'neon' | 'artico' | 'imperial' | 'havana' | 'perla';
 
 export interface ZonaBlackjack {
   x: number;
@@ -977,6 +979,9 @@ export interface BlackjackCfg {
   dealerSoft17: 'plantar' | 'pedir';
   pagoBlackjack: number;
   permitirDoblar: boolean;
+  sonido: boolean;
+  movimiento: 'cinematico' | 'rapido' | 'reducido';
+  ambiente: number;
   /** Una sola imagen para el dorso de todas las cartas. Vacío = dibujo. */
   reversoUrl: string | null;
   /** Cara opcional por carta. Clave `A♠`, `10♥`, etc. */

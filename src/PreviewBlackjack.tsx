@@ -4,6 +4,7 @@ import {
   crearMazo, esBlackjack, jugarDealer, resolver, sacar, valor,
 } from '../motor/blackjack.js';
 import { cfgBlackjack } from './juego/blackjack.ts';
+import { sonidoBlackjack } from './juego/blackjack-audio.ts';
 import { fichasDe, fichasSinCajaDe, parcheFichas } from '../motor/fichas.js';
 import { supabase } from './supabase.ts';
 import { AjusteBlackjack } from './AjusteBlackjack.tsx';
@@ -81,11 +82,13 @@ export function PreviewBlackjack({ juego, onClose, onMesa, onMostrarNombre }: {
     }
     setSaldo((s) => s + ganancia);
     setMano({ jugador, dealer, apuesta: apostado, estado, ganancia });
+    sonidoBlackjack(estado === 'gano' ? 'gano' : estado === 'empate' ? 'empate' : 'perdio', cfg.sonido);
   };
 
   const repartir = () => {
     const monto = Math.min(maxBet, Math.max(minBet, Math.round(apuesta) || minBet));
     if (saldo < monto) return;
+    sonidoBlackjack('ficha', cfg.sonido);
     const mazo = crearMazo(cfg.mazos) as Carta[];
     const jugador = [sacar(mazo) as Carta, sacar(mazo) as Carta];
     const dealer = [sacar(mazo) as Carta, sacar(mazo) as Carta];
@@ -101,6 +104,7 @@ export function PreviewBlackjack({ juego, onClose, onMesa, onMostrarNombre }: {
 
   const pedir = () => {
     if (!mano || !activa) return;
+    sonidoBlackjack('carta', cfg.sonido);
     const mazo = mazoRef.current;
     const jugador = [...mano.jugador, sacar(mazo) as Carta];
     if ((valor(jugador) as { total: number }).total >= 21) {
@@ -115,6 +119,7 @@ export function PreviewBlackjack({ juego, onClose, onMesa, onMostrarNombre }: {
 
   const plantar = () => {
     if (!mano || !activa) return;
+    sonidoBlackjack('voltear', cfg.sonido);
     const mazo = mazoRef.current;
     const dealer = jugarDealer(mazo, [...mano.dealer], cfg) as Carta[];
     cerrar(mano.jugador, dealer, mano.apuesta);
@@ -122,6 +127,7 @@ export function PreviewBlackjack({ juego, onClose, onMesa, onMostrarNombre }: {
 
   const doblar = () => {
     if (!mano || !puedeDoblar) return;
+    sonidoBlackjack('ficha', cfg.sonido);
     const mazo = mazoRef.current;
     const extra = mano.apuesta;
     const jugador = [...mano.jugador, sacar(mazo) as Carta];
@@ -170,11 +176,15 @@ export function PreviewBlackjack({ juego, onClose, onMesa, onMostrarNombre }: {
         anclaRef={setHost}
         nombre={juego.nombre}
         saldo={dinero(saldo)}
+        apuesta={dinero(apuesta)}
         mensaje={mensaje}
+        resultado={mano?.estado || null}
         dealer={dealerVisto}
         jugador={mano?.jugador || []}
         piel={cfg}
         mesa={mesa}
+        movimiento={cfg.movimiento}
+        ambiente={cfg.ambiente}
         mostrarNombre={mostrarNombre}
         demo
         ajuste={mostrarPanel ? {
@@ -200,13 +210,13 @@ export function PreviewBlackjack({ juego, onClose, onMesa, onMostrarNombre }: {
                 />
               </label>
             )}
-            <button disabled={saldo < minBet} onClick={repartir}>Repartir</button>
+            <button disabled={saldo < minBet} onClick={repartir}><span aria-hidden>♠</span> Repartir</button>
           </>
         ) : (
           <>
-            <button className="sec" onClick={pedir}>Pedir</button>
-            <button onClick={plantar}>Plantarse</button>
-            {puedeDoblar && <button className="sec" onClick={doblar}>Doblar</button>}
+            <button className="sec" onClick={pedir}><span aria-hidden>＋</span> Pedir</button>
+            <button onClick={plantar}><span aria-hidden>◆</span> Plantarse</button>
+            {puedeDoblar && <button className="sec" onClick={doblar}><span aria-hidden>×2</span> Doblar</button>}
           </>
         )}
       >
