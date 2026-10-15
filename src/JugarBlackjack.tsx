@@ -45,7 +45,9 @@ export function JugarBlackjack({ datos, saldoInicial, slug, token }: { datos: Da
         body: JSON.stringify({ token, slug, ...body }),
       });
       setPartida(r);
-      if (Number.isFinite(Number(r.saldo))) setSaldo(Number(r.saldo));
+      // Sin saldo nuevo (pedir, o perder) el servidor manda null. Number(null)
+      // es 0, y la mesa lo mostraba como si el jugador se hubiera quedado en cero.
+      if (r.saldo != null && Number.isFinite(Number(r.saldo))) setSaldo(Number(r.saldo));
     } catch (e) {
       setError((e as Error).message || 'No se pudo resolver la mano.');
     } finally {

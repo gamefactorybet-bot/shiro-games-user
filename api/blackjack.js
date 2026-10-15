@@ -84,5 +84,7 @@ async function jugar(req, res, accion) {
   const { data: actual, error } = await supabaseAdmin.from('blackjack_partidas').update({ mano_jugador: mano, mano_dealer: dealer, mazo, apuesta_total: apuestaTotal, estado, ganancia_final: ganancia, version: partida.version + 1, updated_at: new Date().toISOString() }).eq('id', partida.id).eq('version', partida.version).select().single();
   if (error || !actual) throw new Error('La partida cambió; recargá para continuar');
   if (ganancia) saldo = Number((await premiar(token, roundId, ganancia)).balance);
-  return res.status(200).json({ ...vista(actual, estado === 'en_curso'), saldo });
+  const cuerpo = { ...vista(actual, estado === 'en_curso') };
+  if (saldo != null && Number.isFinite(saldo)) cuerpo.saldo = saldo;
+  return res.status(200).json(cuerpo);
 }
