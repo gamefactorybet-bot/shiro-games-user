@@ -75,11 +75,14 @@ export function JugarKeno({ datos, saldoInicial, slug, token }: {
   }, []);
 
   const imagenCarga = (juego.carga_url as string) || (juego.portada_url as string) || null;
+  const fondoExterior = tema.fondo ? `url("${tema.fondo}")` : 'none';
 
   return (
     <>
       <style>{`
-        body { overflow: hidden; }
+        html, body, #app { width:100%; height:100%; min-height:100%; margin:0; overflow:hidden; }
+        body { background-color:#05070b; background-image:${fondoExterior}; background-position:center; background-size:cover; background-repeat:no-repeat; }
+        #app { min-height:100vh; min-height:100dvh; }
         #app, #app * { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; }
       `}</style>
       <div ref={hostRef} />

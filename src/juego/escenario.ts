@@ -272,7 +272,10 @@ export function crearEscenario(opts: CrearEscenarioOpts): Escenario {
   const planilla = planillaDe(juego);
   if (modo === 'jugar') {
     el.style.transformOrigin = 'center center';
-    wrap.style.cssText = 'min-height:100vh; display:flex; align-items:center; justify-content:center; overflow:hidden';
+    wrap.style.cssText = esKeno
+      ? 'width:100vw; height:100vh; height:100dvh; display:flex; align-items:center; justify-content:center; overflow:hidden'
+      : 'min-height:100vh; display:flex; align-items:center; justify-content:center; overflow:hidden';
+    if (esKeno) el.style.borderRadius = '0';
   } else {
     el.style.border = '1px dashed var(--border)';
     wrap.style.cssText = 'width:420px; height:860px; flex-shrink:0';
@@ -400,7 +403,15 @@ export function crearEscenario(opts: CrearEscenarioOpts): Escenario {
   // ---------------- Escala 420×860 ----------------
   const escalar = () => {
     if (modo === 'jugar') {
-      const escala = Math.min(window.innerWidth / 420, window.innerHeight / 860);
+      const anchoVista = window.visualViewport?.width || window.innerWidth;
+      const altoVista = window.visualViewport?.height || window.innerHeight;
+      // Keno usa una composición vertical con márgenes seguros. En móvil
+      // puede cubrir la pantalla completa y recortar solo el excedente del
+      // eje contrario, evitando que el tablero quede pequeño entre franjas.
+      const vertical = altoVista >= anchoVista;
+      const escala = esKeno && vertical
+        ? Math.max(anchoVista / 420, altoVista / 860)
+        : Math.min(anchoVista / 420, altoVista / 860);
       el.style.transform = `scale(${escala})`;
       el.style.margin = `${(860 * escala - 860) / 2}px ${(420 * escala - 420) / 2}px`;
     } else {
@@ -799,11 +810,13 @@ export function crearEscenario(opts: CrearEscenarioOpts): Escenario {
   // ---------------- Limpieza ----------------
   const alRedimensionar = () => escalar();
   window.addEventListener('resize', alRedimensionar);
+  if (modo === 'jugar' && esKeno) window.visualViewport?.addEventListener('resize', alRedimensionar);
   if (modo === 'jugar') window.addEventListener('orientationchange', alRedimensionar);
   const soltarFondo = engancharLoopVideo(ELEMENTO_CAPA.fondo_pantalla);
 
   const destruir = () => {
     window.removeEventListener('resize', alRedimensionar);
+    window.visualViewport?.removeEventListener('resize', alRedimensionar);
     window.removeEventListener('orientationchange', alRedimensionar);
     soltarFondo();
     pararLuces();
