@@ -1,8 +1,9 @@
 import { useCallback, useMemo, useState } from 'react';
 import { fetchJson } from './juego/recursos.ts';
 import { cfgBlackjack } from './juego/blackjack.ts';
-import { MesaBlackjack, type CartaBj } from './BlackjackMesa.tsx';
-import type { DatosJuego } from './types.ts';
+import { fichasDe, fichasSinCajaDe } from '../motor/fichas.js';
+import { FichasEnMesa, MesaBlackjack, type CartaBj } from './BlackjackMesa.tsx';
+import type { DatosJuego, Ficha } from './types.ts';
 
 type Partida = {
   roundId: string;
@@ -22,8 +23,14 @@ const dinero = (n: number) => new Intl.NumberFormat('es-PY', { maximumFractionDi
 export function JugarBlackjack({ datos, saldoInicial, slug, token }: { datos: DatosJuego; saldoInicial: number; slug: string; token: string }) {
   const juego = datos.juego;
   const piel = useMemo(() => cfgBlackjack(juego.blackjack_cfg), [juego]);
+  const fichas = useMemo(() => fichasDe(juego) as Ficha[], [juego]);
+  const [host, setHost] = useState<HTMLElement | null>(null);
   const [saldo, setSaldo] = useState(saldoInicial);
-  const [apuesta, setApuesta] = useState(Math.max(Number(juego.min_bet) || 1000, Number(juego.paso_apuesta) || 1000));
+  const [apuesta, setApuesta] = useState(() => {
+    const lista = fichasDe(juego) as Ficha[];
+    if (lista.length) return lista[0].valor;
+    return Math.max(Number(juego.min_bet) || 1000, Number(juego.paso_apuesta) || 1000);
+  });
   const [partida, setPartida] = useState<Partida | null>(null);
   const [cargando, setCargando] = useState(false);
   const [error, setError] = useState('');
@@ -57,6 +64,7 @@ export function JugarBlackjack({ datos, saldoInicial, slug, token }: { datos: Da
 
   return (
     <MesaBlackjack
+      anclaRef={setHost}
       nombre={juego.nombre}
       saldo={dinero(saldo)}
       mensaje={mensaje}
@@ -67,12 +75,15 @@ export function JugarBlackjack({ datos, saldoInicial, slug, token }: { datos: Da
       piel={piel}
       error={error}
     >
+      <FichasEnMesa juego={juego} host={host} fichas={fichas} apuesta={apuesta} onElegir={setApuesta} bloqueado={!!activa || cargando} />
       {!activa && (
         <>
-          <label className="bj-apuesta">
-            Apuesta
-            <input type="number" min={juego.min_bet} max={juego.max_bet} step={juego.paso_apuesta || 100} value={apuesta} onChange={(e) => setApuesta(Number(e.target.value))} />
-          </label>
+          {!(fichas.length > 0 && fichasSinCajaDe(juego)) && (
+            <label className="bj-apuesta">
+              Apuesta
+              <input type="number" min={juego.min_bet} max={juego.max_bet} step={juego.paso_apuesta || 100} value={apuesta} onChange={(e) => setApuesta(Number(e.target.value))} />
+            </label>
+          )}
           <button disabled={cargando} onClick={iniciar}>{cargando ? 'Repartiendo…' : 'Repartir'}</button>
         </>
       )}

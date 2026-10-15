@@ -4,8 +4,10 @@ import {
   crearMazo, esBlackjack, jugarDealer, resolver, sacar, valor,
 } from '../motor/blackjack.js';
 import { cfgBlackjack } from './juego/blackjack.ts';
-import { MesaBlackjack, type CartaBj } from './BlackjackMesa.tsx';
-import type { Juego } from './types.ts';
+import { fichasDe, fichasSinCajaDe, parcheFichas } from '../motor/fichas.js';
+import { supabase } from './supabase.ts';
+import { FichasEnMesa, MesaBlackjack, type CartaBj } from './BlackjackMesa.tsx';
+import type { Ficha, Juego } from './types.ts';
 
 type Carta = { rango: string; palo: string };
 type Estado = 'en_curso' | 'gano' | 'perdio' | 'empate';
@@ -27,12 +29,18 @@ const dinero = (n: number) => new Intl.NumberFormat('es-PY', { maximumFractionDi
  */
 export function PreviewBlackjack({ juego, onClose }: { juego: Juego; onClose: () => void }) {
   const cfg = useMemo(() => cfgBlackjack(juego.blackjack_cfg), [juego]);
+  const [host, setHost] = useState<HTMLElement | null>(null);
+  const [fichas, setFichas] = useState<Ficha[]>(() => fichasDe(juego) as Ficha[]);
   const minBet = Number(juego.min_bet) || 1000;
   const maxBet = Number(juego.max_bet) || 100000;
   const paso = Number(juego.paso_apuesta) || 100;
   const mazoRef = useRef<Carta[]>([]);
   const [saldo, setSaldo] = useState(SALDO_DEMO);
-  const [apuesta, setApuesta] = useState(Math.min(maxBet, Math.max(minBet, minBet)));
+  const [apuesta, setApuesta] = useState(() => {
+    const lista = fichasDe(juego) as Ficha[];
+    if (lista.length) return lista[0].valor;
+    return Math.min(maxBet, Math.max(minBet, minBet));
+  });
   const [mano, setMano] = useState<Mano | null>(null);
 
   const activa = mano?.estado === 'en_curso';
@@ -129,6 +137,7 @@ export function PreviewBlackjack({ juego, onClose }: { juego: Juego; onClose: ()
         <button onClick={onClose}>✕ Cerrar prueba</button>
       </div>
       <MesaBlackjack
+        anclaRef={setHost}
         nombre={juego.nombre}
         saldo={dinero(saldo)}
         mensaje={mensaje}
@@ -139,19 +148,37 @@ export function PreviewBlackjack({ juego, onClose }: { juego: Juego; onClose: ()
         piel={cfg}
         demo
       >
+        <FichasEnMesa
+          juego={juego}
+          host={host}
+          fichas={fichas}
+          apuesta={apuesta}
+          onElegir={setApuesta}
+          bloqueado={!!activa}
+          editable={!activa}
+          onMover={(i, x, y) => {
+            const next = fichas.map((f, k) => (k === i ? { ...f, x, y } : f));
+            setFichas(next);
+            const guardado = parcheFichas(juego, next);
+            supabase.from('juegos').update({ fichas_cfg: guardado }).eq('id', juego.id).then(() => {});
+            juego.fichas_cfg = guardado;
+          }}
+        />
         {!activa && (
           <>
-            <label className="bj-apuesta">
-              Apuesta
-              <input
-                type="number"
-                min={minBet}
-                max={maxBet}
-                step={paso}
-                value={apuesta}
-                onChange={(e) => setApuesta(Number(e.target.value))}
-              />
-            </label>
+            {!(fichas.length > 0 && fichasSinCajaDe(juego)) && (
+              <label className="bj-apuesta">
+                Apuesta
+                <input
+                  type="number"
+                  min={minBet}
+                  max={maxBet}
+                  step={paso}
+                  value={apuesta}
+                  onChange={(e) => setApuesta(Number(e.target.value))}
+                />
+              </label>
+            )}
             <button disabled={saldo < minBet} onClick={repartir}>Repartir</button>
           </>
         )}
