@@ -88,12 +88,15 @@ export function KenoTablero({ escenario, juego, cfg, tema, pos, estado, onToggle
         .kn-host.denso .kn-grid{gap:1.45cqw}
         .kn-cell{
           min-width:0; min-height:0; border:1px solid color-mix(in srgb,var(--kn-frame,var(--border,#2a3242)) 46%,transparent); border-radius:24%;
-          background:var(--kn-cell,var(--surface-alt,rgba(255,255,255,.05))); cursor:pointer; position:relative;overflow:hidden;
+          background:var(--kn-cell,var(--surface-alt,rgba(255,255,255,.05))); cursor:pointer; position:relative;overflow:hidden;padding:0;
           font-family:var(--kn-font-display,var(--kn-body,monospace)); color:var(--text-dim,#8b95a6);
-          display:grid; place-items:center; font-size:min(5cqw, 17px); font-weight:600;
+          display:grid; place-items:center; font-size:min(5cqw, 17px); font-weight:600;line-height:1;font-variant-numeric:tabular-nums;
           box-shadow:inset 0 1px rgba(255,255,255,.07),0 2px 5px rgba(0,0,0,.18);
           transition:transform .14s, border-color .18s, background .18s,box-shadow .18s,color .18s; -webkit-tap-highlight-color:transparent;
         }
+        .kn-cell-num{position:relative;z-index:1;display:block;width:100%;line-height:1;text-align:center;white-space:nowrap;transform:translateY(.02em)}
+        .kn-host.compacto .kn-cell{font-size:min(4cqw,14px);letter-spacing:-.035em}
+        .kn-host.denso .kn-cell{font-size:min(3.25cqw,11.5px);letter-spacing:-.055em}
         .kn-cell::before{content:"";position:absolute;inset:0;background:linear-gradient(145deg,rgba(255,255,255,.11),transparent 38%);opacity:.55;pointer-events:none}
         .kn-cell:not(:disabled):hover{transform:translateY(-1px);border-color:var(--kn-frame,var(--accent));color:var(--text,#fff);box-shadow:0 4px 12px rgba(0,0,0,.28),0 0 9px var(--kn-glow,transparent),inset 0 1px rgba(255,255,255,.12)}
         .kn-cell:not(:disabled):active{transform:scale(.94)}
@@ -105,8 +108,8 @@ export function KenoTablero({ escenario, juego, cfg, tema, pos, estado, onToggle
         .kn-cell.hit{ background:color-mix(in srgb,var(--kn-acierto,#37d08b) 34%,var(--kn-cell,#10141c)); border-color:var(--kn-acierto,#37d08b); color:#fff; font-weight:800; transform:scale(1.055);
           box-shadow:0 0 0 1px color-mix(in srgb,var(--kn-acierto) 72%,#fff),0 0 18px color-mix(in srgb,var(--kn-acierto) 65%,transparent),inset 0 0 14px color-mix(in srgb,var(--kn-acierto) 35%,transparent)}
         .kn-cell.miss{ border-color:var(--danger,#e5686b); color:var(--danger,#e5686b) }
-        .kn-cell.miss::after{ content:""; position:absolute; inset:14%; border-radius:4px;
-          background:linear-gradient(135deg,transparent 44%,var(--danger,#e5686b) 45%,var(--danger,#e5686b) 55%,transparent 56%); opacity:.5 }
+        .kn-cell.miss::after{content:"";position:absolute;z-index:2;right:7%;top:7%;width:7px;height:7px;border-radius:50%;
+          background:var(--danger,#e5686b);box-shadow:0 0 7px color-mix(in srgb,var(--danger,#e5686b) 72%,transparent);opacity:.92}
         .kn-premio{ position:absolute; transform:translate(-50%,-50%); z-index:16; pointer-events:none; }
         .kn-premio-in{
           display:flex; flex-direction:column; align-items:center; gap:2px; text-align:center;
@@ -128,7 +131,7 @@ export function KenoTablero({ escenario, juego, cfg, tema, pos, estado, onToggle
       `}</style>
 
       <div
-        className={`kn-host${tema.premium ? ' premium' : ''}${cfg.tablero === 80 ? ' denso' : ''}`}
+        className={`kn-host${tema.premium ? ' premium' : ''}${cfg.tablero >= 40 ? ' compacto' : ''}${cfg.tablero === 80 ? ' denso' : ''}`}
         data-tema={tema.id}
         style={{
           left: `${T.x}%`, top: `${T.y}%`, width: T.ancho,
@@ -154,7 +157,7 @@ export function KenoTablero({ escenario, juego, cfg, tema, pos, estado, onToggle
               }
               return (
                 <button key={n} className={cls} aria-pressed={pickedSet.has(n)} aria-label={`Número ${n}`}
-                  disabled={estado.fase !== 'idle'} onClick={() => onToggle(n)}>{n}</button>
+                  disabled={estado.fase !== 'idle'} onClick={() => onToggle(n)}><span className="kn-cell-num">{n}</span></button>
               );
             })}
           </div>
