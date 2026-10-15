@@ -69,14 +69,17 @@ export function JugarBlackjack({ datos, saldoInicial, slug, token }: { datos: Da
       saldo={dinero(saldo)}
       mensaje={mensaje}
       dealer={partida?.dealer || []}
-      valorDealer={partida?.valorDealer ?? null}
       jugador={partida?.jugador || []}
-      valorJugador={partida ? partida.valorJugador : null}
       piel={piel}
+      mesa={piel.mesa}
       error={error}
-    >
-      <FichasEnMesa juego={juego} host={host} fichas={fichas} apuesta={apuesta} onElegir={setApuesta} bloqueado={!!activa || cargando} />
-      {!activa && (
+      acciones={activa ? (
+        <>
+          <button className="sec" disabled={cargando} onClick={() => accion('pedir')}>Pedir</button>
+          <button disabled={cargando} onClick={() => accion('plantar')}>Plantarse</button>
+          {partida?.puedeDoblar && <button className="sec" disabled={cargando || saldo < partida.apuesta} onClick={() => accion('doblar')}>Doblar</button>}
+        </>
+      ) : (
         <>
           {!(fichas.length > 0 && fichasSinCajaDe(juego)) && (
             <label className="bj-apuesta">
@@ -87,13 +90,8 @@ export function JugarBlackjack({ datos, saldoInicial, slug, token }: { datos: Da
           <button disabled={cargando} onClick={iniciar}>{cargando ? 'Repartiendo…' : 'Repartir'}</button>
         </>
       )}
-      {activa && (
-        <>
-          <button className="sec" disabled={cargando} onClick={() => accion('pedir')}>Pedir</button>
-          <button disabled={cargando} onClick={() => accion('plantar')}>Plantarse</button>
-          {partida?.puedeDoblar && <button className="sec" disabled={cargando || saldo < partida.apuesta} onClick={() => accion('doblar')}>Doblar</button>}
-        </>
-      )}
+    >
+      <FichasEnMesa juego={juego} host={host} fichas={fichas} apuesta={apuesta} onElegir={setApuesta} bloqueado={!!activa || cargando} />
     </MesaBlackjack>
   );
 }

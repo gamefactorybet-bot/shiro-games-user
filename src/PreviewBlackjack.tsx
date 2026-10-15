@@ -6,8 +6,9 @@ import {
 import { cfgBlackjack } from './juego/blackjack.ts';
 import { fichasDe, fichasSinCajaDe, parcheFichas } from '../motor/fichas.js';
 import { supabase } from './supabase.ts';
+import { AjusteBlackjack } from './AjusteBlackjack.tsx';
 import { FichasEnMesa, MesaBlackjack, type CartaBj } from './BlackjackMesa.tsx';
-import type { Ficha, Juego } from './types.ts';
+import type { AjusteBlackjackElem, DisenoBlackjack, Ficha, Juego, PiezaBlackjack } from './types.ts';
 
 type Carta = { rango: string; palo: string };
 type Estado = 'en_curso' | 'gano' | 'perdio' | 'empate';
@@ -27,8 +28,15 @@ const dinero = (n: number) => new Intl.NumberFormat('es-PY', { maximumFractionDi
  * Vista previa del 21. Este motor no tiene símbolos: la mesa se arma
  * con el mazo local y plata de mentira, sin pasar por la previa de rodillos.
  */
-export function PreviewBlackjack({ juego, onClose }: { juego: Juego; onClose: () => void }) {
+export function PreviewBlackjack({ juego, onClose, onMesa }: {
+  juego: Juego;
+  onClose: () => void;
+  onMesa?: (cfg: Juego['blackjack_cfg']) => void;
+}) {
   const cfg = useMemo(() => cfgBlackjack(juego.blackjack_cfg), [juego]);
+  const [mesa, setMesa] = useState<DisenoBlackjack>(() => cfgBlackjack(juego.blackjack_cfg).mesa);
+  const [mostrarPanel, setMostrarPanel] = useState(false);
+  const [elem, setElem] = useState<AjusteBlackjackElem>('crupier');
   const [host, setHost] = useState<HTMLElement | null>(null);
   const [fichas, setFichas] = useState<Ficha[]>(() => fichasDe(juego) as Ficha[]);
   const minBet = Number(juego.min_bet) || 1000;
@@ -48,7 +56,6 @@ export function PreviewBlackjack({ juego, onClose }: { juego: Juego; onClose: ()
     ? (activa ? [null, mano.dealer[1] ?? null] : mano.dealer)
     : [];
   const valorJugador = mano ? (valor(mano.jugador) as { total: number }).total : null;
-  const valorDealer = mano && !activa ? (valor(mano.dealer) as { total: number }).total : null;
   const puedeDoblar = !!mano && activa && cfg.permitirDoblar && mano.jugador.length === 2 && saldo >= mano.apuesta;
 
   const cerrar = (jugador: Carta[], dealer: Carta[], apostado: number, natural = false) => {
@@ -134,37 +141,33 @@ export function PreviewBlackjack({ juego, onClose }: { juego: Juego; onClose: ()
     <div style={{ position: 'fixed', inset: 0, zIndex: 100, overflow: 'auto' }}>
       <div style={{ position: 'absolute', top: 12, left: 12, zIndex: 60, display: 'flex', gap: 8, alignItems: 'center' }}>
         <span className="hint">plata de mentira</span>
+        <button onClick={() => setMostrarPanel((v) => !v)}>⚙ Ajustar</button>
         <button onClick={onClose}>✕ Cerrar prueba</button>
       </div>
+      {mostrarPanel && (
+        <div style={{ position: 'absolute', top: 56, right: 12, zIndex: 80 }}>
+          <AjusteBlackjack juego={juego} mesa={mesa} onChange={setMesa} elem={elem} onElem={setElem} onGuardada={onMesa} />
+        </div>
+      )}
       <MesaBlackjack
         anclaRef={setHost}
         nombre={juego.nombre}
         saldo={dinero(saldo)}
         mensaje={mensaje}
         dealer={dealerVisto}
-        valorDealer={valorDealer}
         jugador={mano?.jugador || []}
-        valorJugador={valorJugador}
         piel={cfg}
+        mesa={mesa}
         demo
-      >
-        <FichasEnMesa
-          juego={juego}
-          host={host}
-          fichas={fichas}
-          apuesta={apuesta}
-          onElegir={setApuesta}
-          bloqueado={!!activa}
-          editable={!activa}
-          onMover={(i, x, y) => {
-            const next = fichas.map((f, k) => (k === i ? { ...f, x, y } : f));
-            setFichas(next);
-            const guardado = parcheFichas(juego, next);
-            supabase.from('juegos').update({ fichas_cfg: guardado }).eq('id', juego.id).then(() => {});
-            juego.fichas_cfg = guardado;
-          }}
-        />
-        {!activa && (
+        ajuste={mostrarPanel ? {
+          elem,
+          onMover: (x, y) => setMesa((m) => (
+            elem === 'pano' ? { ...m, pano: { ...m.pano, x, y } }
+              : (elem === 'cartas' || elem === 'fichas') ? m
+                : { ...m, [elem]: { ...m[elem as PiezaBlackjack], x, y } }
+          )),
+        } : null}
+        acciones={!activa ? (
           <>
             {!(fichas.length > 0 && fichasSinCajaDe(juego)) && (
               <label className="bj-apuesta">
@@ -181,14 +184,30 @@ export function PreviewBlackjack({ juego, onClose }: { juego: Juego; onClose: ()
             )}
             <button disabled={saldo < minBet} onClick={repartir}>Repartir</button>
           </>
-        )}
-        {activa && (
+        ) : (
           <>
             <button className="sec" onClick={pedir}>Pedir</button>
             <button onClick={plantar}>Plantarse</button>
             {puedeDoblar && <button className="sec" onClick={doblar}>Doblar</button>}
           </>
         )}
+      >
+        <FichasEnMesa
+          juego={juego}
+          host={host}
+          fichas={fichas}
+          apuesta={apuesta}
+          onElegir={setApuesta}
+          bloqueado={!!activa}
+          editable={mostrarPanel && elem === 'fichas' && !activa}
+          onMover={(i, x, y) => {
+            const next = fichas.map((f, k) => (k === i ? { ...f, x, y } : f));
+            setFichas(next);
+            const guardado = parcheFichas(juego, next);
+            supabase.from('juegos').update({ fichas_cfg: guardado }).eq('id', juego.id).then(() => {});
+            juego.fichas_cfg = guardado;
+          }}
+        />
       </MesaBlackjack>
     </div>,
     document.body,

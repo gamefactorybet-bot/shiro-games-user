@@ -39,7 +39,7 @@ import { cfgConDefaults as cfgLimboRaw, rtpDe as rtpLimboDe } from '../motor/lim
 import { cfgConDefaults as cfgDiceRaw, rtpDe as rtpDiceDe } from '../motor/dice.js';
 import { cfgDe as cfgKenoDe } from './juego/keno.ts';
 import { cfgDe as cfgTorreDe } from './juego/torre.ts';
-import { cfgBlackjack, claveCarta, PALOS_BJ, RANGOS_BJ } from './juego/blackjack.ts';
+import { cfgBlackjack, claveCarta, encolarBlackjack, PALOS_BJ, RANGOS_BJ, TEMAS_BLACKJACK } from './juego/blackjack.ts';
 import { rtpDe as rtpSieteUdDe } from '../motor/sieteud.js';
 import { rtpDe as rtpKenoDe, rtpTabla as rtpKenoTabla, tablaBase as tablaKenoBase } from '../motor/keno.js';
 import { rtpDe as rtpTorreDe, multBase as multTorreBase, rtpPiso as rtpTorrePiso, chanceZafar as chanceTorre } from '../motor/torre.js';
@@ -51,7 +51,7 @@ import { ACCEPT_FONDO, esVideoFondo, validarVideoFondo } from './juego/fondo.ts'
 import { CardPiel } from './SelectorPiel.tsx';
 import { TEMAS as TEMAS_MINES } from './juego/mines-temas.ts';
 import type {
-  ClienteActivo, CrashCfg, DiceCfg, Efecto, EstadoJuego, Juego, KenoCfg, LimboCfg,
+  BlackjackCfg, ClienteActivo, CrashCfg, DiceCfg, Efecto, EstadoJuego, Juego, KenoCfg, LimboCfg,
   PerfilRtp, PlinkoCfg, RaspaCfg, RotacionRtp, RotacionEstado, RotacionHistorialFila,
   RuletaBotonesCfg, SieteUdCfg, Simbolo, SimboloRaspa, Sonido, TorreCfg,
 } from './types.ts';
@@ -942,7 +942,7 @@ export function Editor({ juego: juegoProp, onCambio }: EditorProps) {
                               : esTorre
                                 ? <PreviewTorre juego={juego} onClose={() => setPreviewAbierto(false)} />
                                 : esBlackjack
-                                  ? <PreviewBlackjack juego={juego} onClose={() => setPreviewAbierto(false)} />
+                                  ? <PreviewBlackjack juego={juego} onClose={() => setPreviewAbierto(false)} onMesa={(cfg) => { setJuego((j) => ({ ...j, blackjack_cfg: cfg as Juego['blackjack_cfg'] })); marcarGuardado(); }} />
                                   : <Preview juego={juego} simbolos={simbolos} sonidos={sonidos} efectos={efectos} onClose={() => setPreviewAbierto(false)} />}
         </Suspense>
       )}
@@ -2562,12 +2562,44 @@ function SeccionBlackjack({ juego, onCampo }: {
 }) {
   const [cfg, setCfg] = useState(() => cfgBlackjack(juego.blackjack_cfg));
   useEffect(() => setCfg(cfgBlackjack(juego.blackjack_cfg)), [juego.id]);
-  const guardar = (next: typeof cfg) => { setCfg(next); onCampo('blackjack_cfg', next); };
-  const aplicar = (fn: (prev: typeof cfg) => typeof cfg) => {
+  // La mesa vive en el mismo jsonb. Si el formulario guarda su copia de
+  // cuando se abrió la sección, borra lo que se acaba de mover en ⚙ Ajustar.
+  const mesaJson = JSON.stringify(cfgBlackjack(juego.blackjack_cfg).mesa);
+  const [mesaVista, setMesaVista] = useState(mesaJson);
+  if (mesaJson !== mesaVista) {
+    setMesaVista(mesaJson);
+    setCfg((prev) => ({ ...prev, mesa: cfgBlackjack(juego.blackjack_cfg).mesa }));
+  }
+  const programar = (next: BlackjackCfg, temaEditado: boolean) => {
+    const tema = next.mesa.tema;
+    void encolarBlackjack(juego.id, async () => {
+      let mesa = cfgBlackjack(juego.blackjack_cfg).mesa;
+      const { data, error } = await supabase.from('juegos').select('blackjack_cfg').eq('id', juego.id).single();
+      if (!error) mesa = cfgBlackjack(data?.blackjack_cfg).mesa;
+      if (temaEditado) mesa = { ...mesa, tema };
+      const salida = { ...next, mesa };
+      juego.blackjack_cfg = salida;
+      setCfg((prev) => ({ ...prev, mesa }));
+      await onCampo('blackjack_cfg', salida);
+    });
+  };
+  const guardar = (next: BlackjackCfg) => {
+    const temaEditado = next.mesa.tema !== cfg.mesa.tema;
+    const viva = cfgBlackjack(juego.blackjack_cfg).mesa;
+    const completo = { ...next, mesa: { ...viva, tema: temaEditado ? next.mesa.tema : viva.tema } };
+    setCfg(completo);
+    juego.blackjack_cfg = completo;
+    programar(completo, temaEditado);
+  };
+  const aplicar = (fn: (prev: BlackjackCfg) => BlackjackCfg) => {
     setCfg((prev) => {
       const next = fn(prev);
-      onCampo('blackjack_cfg', next);
-      return next;
+      const temaEditado = next.mesa.tema !== prev.mesa.tema;
+      const viva = cfgBlackjack(juego.blackjack_cfg).mesa;
+      const completo = { ...next, mesa: { ...viva, tema: temaEditado ? next.mesa.tema : viva.tema } };
+      juego.blackjack_cfg = completo;
+      programar(completo, temaEditado);
+      return completo;
     });
   };
   const cargadas = Object.keys(cfg.cartas || {}).length;
@@ -2599,7 +2631,11 @@ function SeccionBlackjack({ juego, onCampo }: {
           <label>Blackjack natural<select value={cfg.pagoBlackjack} onChange={(e) => guardar({ ...cfg, pagoBlackjack: Number(e.target.value) })}><option value="1.5">Paga 3:2</option><option value="1.2">Paga 6:5</option></select></label>
           <label>Soft 17 del crupier<select value={cfg.dealerSoft17} onChange={(e) => guardar({ ...cfg, dealerSoft17: e.target.value as 'plantar' | 'pedir' })}><option value="plantar">Se planta</option><option value="pedir">Pide carta</option></select></label>
           <label style={{ display: 'flex', gap: 8, alignItems: 'center', paddingTop: 22 }}><input type="checkbox" checked={cfg.permitirDoblar} onChange={(e) => guardar({ ...cfg, permitirDoblar: e.target.checked })} /> Permitir doblar</label>
+          <label>Temática<select value={cfg.mesa.tema} onChange={(e) => guardar({ ...cfg, mesa: { ...cfg.mesa, tema: e.target.value as typeof cfg.mesa.tema } })}>{TEMAS_BLACKJACK.map((t) => <option key={t.id} value={t.id}>{t.nombre}</option>)}</select></label>
         </div>
+        <p className="hint" style={{ margin: '12px 0 0' }}>
+          Para mover el paño, las manos, el mazo, el saldo y los botones, y para cambiar el tamaño, abrí <b>Vista previa → ⚙ Ajustar</b>.
+        </p>
       </div>
 
       <div className="card">

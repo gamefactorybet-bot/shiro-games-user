@@ -938,6 +938,40 @@ export interface EstadoKeno {
 
 export type DificultadTorre = 'facil' | 'media' | 'dificil' | 'experto' | 'maestro' | 'custom';
 
+export type TemaBlackjack = 'noche' | 'burdeos' | 'carbon' | 'caoba' | 'zafiro';
+
+export interface ZonaBlackjack {
+  x: number;
+  y: number;
+  /** 100 = tamaño natural. */
+  escala: number;
+}
+
+export interface PanoBlackjack {
+  x: number;
+  y: number;
+  ancho: number;
+  alto: number;
+}
+
+/** Posición y tamaño de la mesa de 21. Porcentajes de la pantalla. */
+export interface DisenoBlackjack {
+  tema: TemaBlackjack;
+  cartaAncho: number;
+  cartaAlto: number;
+  pano: PanoBlackjack;
+  nombre: ZonaBlackjack;
+  saldo: ZonaBlackjack;
+  mazo: ZonaBlackjack;
+  crupier: ZonaBlackjack;
+  aro: ZonaBlackjack;
+  jugador: ZonaBlackjack;
+  controles: ZonaBlackjack;
+}
+
+export type PiezaBlackjack = 'pano' | 'nombre' | 'saldo' | 'mazo' | 'crupier' | 'aro' | 'jugador' | 'controles';
+export type AjusteBlackjackElem = PiezaBlackjack | 'cartas' | 'fichas';
+
 export interface BlackjackCfg {
   mazos: number;
   dealerSoft17: 'plantar' | 'pedir';
@@ -947,6 +981,7 @@ export interface BlackjackCfg {
   reversoUrl: string | null;
   /** Cara opcional por carta. Clave `A♠`, `10♥`, etc. */
   cartas: Record<string, string>;
+  mesa: DisenoBlackjack;
 }
 
 export interface TorreCfg {
