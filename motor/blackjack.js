@@ -30,6 +30,8 @@ export const MESA_DEFAULT = {
 const TEMAS = new Set([
   'noche', 'burdeos', 'carbon', 'caoba', 'zafiro', 'monaco',
   'artdeco', 'neon', 'artico', 'imperial', 'havana', 'perla',
+  'inferno', 'galaxia', 'selva', 'atlantis', 'faraon', 'cyberpunk',
+  'dragon', 'pirata', 'celestial', 'encantado', 'steampunk', 'castillo',
 ]);
 const clamp = (n, lo, hi) => Math.max(lo, Math.min(hi, n));
 const obj = (v) => (v && typeof v === 'object' && !Array.isArray(v) ? v : {});

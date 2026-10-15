@@ -940,7 +940,9 @@ export type DificultadTorre = 'facil' | 'media' | 'dificil' | 'experto' | 'maest
 
 export type TemaBlackjack =
   | 'noche' | 'burdeos' | 'carbon' | 'caoba' | 'zafiro' | 'monaco'
-  | 'artdeco' | 'neon' | 'artico' | 'imperial' | 'havana' | 'perla';
+  | 'artdeco' | 'neon' | 'artico' | 'imperial' | 'havana' | 'perla'
+  | 'inferno' | 'galaxia' | 'selva' | 'atlantis' | 'faraon' | 'cyberpunk'
+  | 'dragon' | 'pirata' | 'celestial' | 'encantado' | 'steampunk' | 'castillo';
 
 export interface ZonaBlackjack {
   x: number;

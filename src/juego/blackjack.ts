@@ -29,6 +29,18 @@ export const TEMAS_BLACKJACK: TemaBlackjackVista[] = [
   tema('caoba', 'Oktoberfest Lodge', 'Festival bávaro · septiembre', ['#31513a', '#ba7b35'], 'oktoberfest-lodge'),
   tema('artico', 'Winter Palace', 'Temporada de invierno', ['#607e9d', '#e2f4ff'], 'winter-palace'),
   tema('zafiro', 'Summer Riviera', 'Temporada de verano', ['#074d6b', '#d6a34f'], 'summer-riviera'),
+  tema('inferno', 'Inferno Vault', 'Lava, obsidiana y cobre', ['#1c1715', '#f06a21'], 'inferno-vault'),
+  tema('galaxia', 'Galactic Horizon', 'Galaxia y titanio', ['#111a4a', '#9d6bff'], 'galactic-horizon'),
+  tema('selva', 'Emerald Jungle', 'Selva y ruinas antiguas', ['#0a4b2d', '#b78a42'], 'emerald-jungle'),
+  tema('atlantis', 'Lost Atlantis', 'Palacio bajo el océano', ['#087886', '#b5e9e2'], 'lost-atlantis'),
+  tema('faraon', 'Pharaoh’s Chamber', 'Egipto, lapislázuli y oro', ['#15243f', '#d7aa46'], 'pharaohs-chamber'),
+  tema('cyberpunk', 'Cyberpunk District', 'Neón y ciudad nocturna', ['#11152d', '#ec47c8'], 'cyberpunk-district'),
+  tema('dragon', 'Dragon Temple', 'Templo entre montañas', ['#721c24', '#d8a653'], 'dragon-temple'),
+  tema('pirata', 'Pirate Treasure Vault', 'Galeón, tormenta y tesoros', ['#073b3c', '#bd803e'], 'pirate-treasure-vault'),
+  tema('celestial', 'Cloud Kingdom', 'Palacio sobre las nubes', ['#a8d7e9', '#d5b56c'], 'cloud-kingdom'),
+  tema('encantado', 'Enchanted Forest', 'Bosque mágico nocturno', ['#16452b', '#6978d8'], 'enchanted-forest'),
+  tema('steampunk', 'Steampunk Foundry', 'Cobre, vapor y maquinaria', ['#343128', '#bf7434'], 'steampunk-foundry'),
+  tema('castillo', 'Moonlit Castle', 'Castillo bajo la luna', ['#10294c', '#bfcbe0'], 'moonlit-castle'),
 ];
 
 export function fondoTemaBlackjack(id: TemaBlackjack): string {

@@ -537,6 +537,78 @@ const ESTILOS = `
   --bj-motivo:linear-gradient(135deg,rgba(255,255,255,.1),transparent 40%,rgba(35,44,42,.035));
   --bj-tinte:rgba(122,14,43,.09);
 }
+.blackjack.tema-inferno{
+  --bj-luz:rgba(255,70,12,.5);--bj-pano-a:#201713;--bj-pano-b:#090605;
+  --bj-madera:#0d0908;--bj-oro:#f1843d;--bj-oro-suave:rgba(241,132,61,.4);
+  --bj-bg-a:#2b1008;--bj-bg-b:#070201;--bj-btn-a:#ffad57;--bj-btn-b:#a63a12;--bj-btn-ink:#210a02;
+  --bj-tinte:rgba(142,28,4,.1);
+}
+.blackjack.tema-galaxia{
+  --bj-luz:rgba(115,78,255,.48);--bj-pano-a:#111a4a;--bj-pano-b:#050818;
+  --bj-madera:#080a14;--bj-oro:#a9a7ff;--bj-oro-suave:rgba(169,167,255,.38);
+  --bj-bg-a:#11173d;--bj-bg-b:#030510;--bj-btn-a:#c6b5ff;--bj-btn-b:#6552b8;--bj-btn-ink:#110c28;
+  --bj-tinte:rgba(58,38,151,.1);
+}
+.blackjack.tema-selva{
+  --bj-luz:rgba(62,154,76,.42);--bj-pano-a:#0d4c2e;--bj-pano-b:#04170d;
+  --bj-madera:#25150a;--bj-oro:#c29a54;--bj-oro-suave:rgba(194,154,84,.38);
+  --bj-bg-a:#123620;--bj-bg-b:#041009;--bj-btn-a:#d6b46f;--bj-btn-b:#77602c;--bj-btn-ink:#171108;
+  --bj-tinte:rgba(15,89,47,.08);
+}
+.blackjack.tema-atlantis{
+  --bj-luz:rgba(37,196,210,.46);--bj-pano-a:#087886;--bj-pano-b:#022a36;
+  --bj-madera:#193c42;--bj-oro:#a5e4df;--bj-oro-suave:rgba(165,228,223,.4);
+  --bj-bg-a:#075261;--bj-bg-b:#01171f;--bj-btn-a:#c9f3eb;--bj-btn-b:#4b9ba2;--bj-btn-ink:#062529;
+  --bj-tinte:rgba(5,110,130,.09);
+}
+.blackjack.tema-faraon{
+  --bj-luz:rgba(230,166,53,.44);--bj-pano-a:#15243f;--bj-pano-b:#070d18;
+  --bj-madera:#120c08;--bj-oro:#dfb653;--bj-oro-suave:rgba(223,182,83,.42);
+  --bj-bg-a:#182137;--bj-bg-b:#050812;--bj-btn-a:#efd37d;--bj-btn-b:#9e6d21;--bj-btn-ink:#221506;
+  --bj-tinte:rgba(82,55,8,.08);
+}
+.blackjack.tema-cyberpunk{
+  --bj-luz:rgba(231,55,202,.5);--bj-pano-a:#11152d;--bj-pano-b:#040611;
+  --bj-madera:#080812;--bj-oro:#67e7ef;--bj-oro-suave:rgba(103,231,239,.4);
+  --bj-bg-a:#11112c;--bj-bg-b:#03030b;--bj-btn-a:#f178dc;--bj-btn-b:#7939a4;--bj-btn-ink:#10091c;
+  --bj-tinte:rgba(77,22,113,.11);
+}
+.blackjack.tema-dragon{
+  --bj-luz:rgba(200,67,45,.45);--bj-pano-a:#711d25;--bj-pano-b:#21070b;
+  --bj-madera:#24110a;--bj-oro:#d8aa59;--bj-oro-suave:rgba(216,170,89,.4);
+  --bj-bg-a:#3c1117;--bj-bg-b:#0d0305;--bj-btn-a:#e9c170;--bj-btn-b:#92631f;--bj-btn-ink:#211306;
+  --bj-tinte:rgba(114,20,24,.08);
+}
+.blackjack.tema-pirata{
+  --bj-luz:rgba(194,125,54,.42);--bj-pano-a:#073f3d;--bj-pano-b:#021716;
+  --bj-madera:#29170b;--bj-oro:#c68a48;--bj-oro-suave:rgba(198,138,72,.4);
+  --bj-bg-a:#16352f;--bj-bg-b:#06100e;--bj-btn-a:#d9a66b;--bj-btn-b:#805326;--bj-btn-ink:#1c1007;
+  --bj-tinte:rgba(14,69,66,.08);
+}
+.blackjack.tema-celestial{
+  --bj-luz:rgba(255,232,176,.5);--bj-pano-a:#a8d7e9;--bj-pano-b:#547f9c;
+  --bj-madera:#d9d0bf;--bj-oro:#b99751;--bj-oro-suave:rgba(185,151,81,.4);
+  --bj-bg-a:#a3cbdc;--bj-bg-b:#496a82;--bj-text:#fffdf7;--bj-btn-a:#fff1c7;--bj-btn-b:#c1a160;--bj-btn-ink:#302410;
+  --bj-tinte:rgba(185,222,238,.08);
+}
+.blackjack.tema-encantado{
+  --bj-luz:rgba(90,83,224,.48);--bj-pano-a:#16452b;--bj-pano-b:#06170d;
+  --bj-madera:#17100d;--bj-oro:#8fa9ee;--bj-oro-suave:rgba(143,169,238,.4);
+  --bj-bg-a:#132c24;--bj-bg-b:#050d09;--bj-btn-a:#aeb8ff;--bj-btn-b:#5f569d;--bj-btn-ink:#15102b;
+  --bj-tinte:rgba(38,62,126,.1);
+}
+.blackjack.tema-steampunk{
+  --bj-luz:rgba(220,112,42,.44);--bj-pano-a:#353129;--bj-pano-b:#100d09;
+  --bj-madera:#23140b;--bj-oro:#c47b3b;--bj-oro-suave:rgba(196,123,59,.4);
+  --bj-bg-a:#2b241b;--bj-bg-b:#0b0805;--bj-btn-a:#dea064;--bj-btn-b:#794521;--bj-btn-ink:#1d0e05;
+  --bj-tinte:rgba(104,54,19,.09);
+}
+.blackjack.tema-castillo{
+  --bj-luz:rgba(92,118,197,.44);--bj-pano-a:#10294c;--bj-pano-b:#050c18;
+  --bj-madera:#0c1018;--bj-oro:#bcc8df;--bj-oro-suave:rgba(188,200,223,.38);
+  --bj-bg-a:#13243d;--bj-bg-b:#040811;--bj-btn-a:#d7dfef;--bj-btn-b:#73819e;--bj-btn-ink:#121724;
+  --bj-tinte:rgba(32,61,124,.09);
+}
 .bj-ambiente,.bj-vineta{position:absolute;inset:0;pointer-events:none;z-index:0}
 .bj-vineta{z-index:8;box-shadow:inset 0 0 72px rgba(0,0,0,.5),inset 0 -72px 80px rgba(0,0,0,.28)}
 .bj-ambiente{opacity:var(--bj-ambiente);overflow:hidden}
