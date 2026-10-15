@@ -2694,13 +2694,13 @@ function SeccionBlackjack({ juego, onCampo }: {
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 18 }}>
             <label style={{
               width: 72, height: 108, borderRadius: 10, border: '1px dashed var(--border)', overflow: 'hidden',
-              background: `center/cover no-repeat url("${cfg.fondoUrl || '/blackjack/royal-emerald-table-v1.webp'}")`,
+              background: `center/cover no-repeat url("${cfg.fondoUrl || TEMAS_BLACKJACK.find((t) => t.id === cfg.mesa.tema)?.miniatura || TEMAS_BLACKJACK[0].miniatura}")`,
               display: 'grid', placeItems: 'center', cursor: 'pointer', flexShrink: 0,
             }} title="Cambiar fondo de mesa">
               <input type="file" accept="image/*" hidden onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ''; if (f) ponerFondo(f); }} />
             </label>
             <div>
-              <b style={{ fontSize: 13 }}>{cfg.fondoUrl ? 'Fondo personalizado' : 'Royal Emerald incluido'}</b>
+              <b style={{ fontSize: 13 }}>{cfg.fondoUrl ? 'Fondo personalizado' : `${TEMAS_BLACKJACK.find((t) => t.id === cfg.mesa.tema)?.nombre || 'Royal Emerald'} incluido`}</b>
               <p className="hint" style={{ margin: '3px 0 7px' }}>Usá una imagen vertical, idealmente 1024 × 1536 px. Los elementos del juego se colocan encima.</p>
               {cfg.fondoUrl && <button type="button" style={{ fontSize: 11 }} onClick={() => guardar({ ...cfg, fondoUrl: null })}>Volver al fondo incluido</button>}
             </div>
@@ -2709,8 +2709,8 @@ function SeccionBlackjack({ juego, onCampo }: {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(150px,1fr))', gap: 9 }}>
             {TEMAS_BLACKJACK.map((t) => (
               <button key={t.id} type="button" onClick={() => guardar({ ...cfg, mesa: { ...cfg.mesa, tema: t.id } })}
-                style={{ textAlign: 'left', padding: 10, borderRadius: 12, border: cfg.mesa.tema === t.id ? '1px solid var(--accent)' : '1px solid var(--border)', background: cfg.mesa.tema === t.id ? 'var(--accent-soft)' : 'var(--surface-alt)' }}>
-                <span style={{ display: 'flex', height: 36, borderRadius: 8, overflow: 'hidden', marginBottom: 8, boxShadow: 'inset 0 0 0 1px rgba(255,255,255,.12)' }}><i style={{ flex: 1, background: t.colores[0] }} /><i style={{ flex: 1, background: t.colores[1] }} /></span>
+                style={{ textAlign: 'left', padding: 7, borderRadius: 12, overflow: 'hidden', border: cfg.mesa.tema === t.id ? '1px solid var(--accent)' : '1px solid var(--border)', background: cfg.mesa.tema === t.id ? 'var(--accent-soft)' : 'var(--surface-alt)', boxShadow: cfg.mesa.tema === t.id ? '0 0 0 2px color-mix(in srgb,var(--accent) 18%,transparent)' : undefined }}>
+                <span style={{ display: 'block', height: 94, borderRadius: 8, overflow: 'hidden', marginBottom: 8, background: `center 42%/cover no-repeat url("${t.miniatura}")`, boxShadow: 'inset 0 0 0 1px rgba(255,255,255,.14)' }} />
                 <b style={{ display: 'block', fontSize: 12 }}>{t.nombre}</b><small className="hint">{t.subtitulo}</small>
               </button>
             ))}

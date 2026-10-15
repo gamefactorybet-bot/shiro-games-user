@@ -71,9 +71,9 @@ export function AjusteBlackjack({ juego, mesa, onChange, elem, onElem, onGuardad
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: 6, marginBottom: 12 }}>
         {TEMAS_BLACKJACK.map((t) => (
           <button key={t.id} type="button" className={mesa.tema === t.id ? 'on' : ''}
-            style={{ padding: 7, textAlign: 'left', borderColor: mesa.tema === t.id ? 'var(--accent)' : undefined }}
+            style={{ padding: 5, textAlign: 'left', borderColor: mesa.tema === t.id ? 'var(--accent)' : undefined }}
             onClick={() => onChange({ ...mesa, tema: t.id })}>
-            <span style={{ display: 'flex', height: 10, borderRadius: 5, overflow: 'hidden', marginBottom: 4 }}><i style={{ flex: 1, background: t.colores[0] }} /><i style={{ flex: 1, background: t.colores[1] }} /></span>
+            <span style={{ display: 'block', height: 66, borderRadius: 6, overflow: 'hidden', marginBottom: 5, background: `center 42%/cover no-repeat url("${t.miniatura}")` }} />
             <small>{t.nombre}</small>
           </button>
         ))}

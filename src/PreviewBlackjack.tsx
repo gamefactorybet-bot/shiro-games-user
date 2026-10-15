@@ -8,7 +8,7 @@ import { sonidoBlackjack } from './juego/blackjack-audio.ts';
 import { fichasDe, fichasSinCajaDe, parcheFichas } from '../motor/fichas.js';
 import { supabase } from './supabase.ts';
 import { AjusteBlackjack } from './AjusteBlackjack.tsx';
-import { FichasEnMesa, MesaBlackjack, type CartaBj } from './BlackjackMesa.tsx';
+import { FichasEnMesa, IconoBj, MesaBlackjack, type CartaBj } from './BlackjackMesa.tsx';
 import type { AjusteBlackjackElem, DisenoBlackjack, Ficha, Juego, PiezaBlackjack } from './types.ts';
 
 type Carta = { rango: string; palo: string };
@@ -199,7 +199,7 @@ export function PreviewBlackjack({ juego, onClose, onMesa, onMostrarNombre }: {
           <div className="bj-control-stack">
             {!(fichas.length > 0 && fichasSinCajaDe(juego)) && (
               <label className="bj-apuesta bj-stepper">
-                <button type="button" aria-label="Bajar apuesta" disabled={activa} onClick={() => setApuesta((v) => Math.max(minBet, v - paso))}>−</button>
+                <button type="button" aria-label="Bajar apuesta" disabled={activa} onClick={() => setApuesta((v) => Math.max(minBet, v - paso))}><IconoBj tipo="menos" /></button>
                 <span>Apuesta</span>
                 <input
                   aria-label="Monto de la apuesta"
@@ -211,18 +211,18 @@ export function PreviewBlackjack({ juego, onClose, onMesa, onMostrarNombre }: {
                   value={apuesta}
                   onChange={(e) => setApuesta(Number(e.target.value))}
                 />
-                <button type="button" aria-label="Subir apuesta" disabled={activa} onClick={() => setApuesta((v) => Math.min(maxBet, v + paso))}>＋</button>
+                <button type="button" aria-label="Subir apuesta" disabled={activa} onClick={() => setApuesta((v) => Math.min(maxBet, v + paso))}><IconoBj tipo="mas" /></button>
               </label>
             )}
             {activa ? (
               <div className="bj-actionbar">
-                <button className="accion-pedir" onClick={pedir}><span aria-hidden>♣</span>Pedir</button>
-                <button className="accion-plantar" onClick={plantar}><span aria-hidden>✋</span>Plantarse</button>
-                <button className="accion-doblar" disabled={!puedeDoblar} onClick={doblar}><span aria-hidden>×2</span>Doblar</button>
+                <button className="accion-pedir" onClick={pedir}><span><IconoBj tipo="pedir" /></span>Pedir</button>
+                <button className="accion-plantar" onClick={plantar}><span><IconoBj tipo="plantar" /></span>Plantarse</button>
+                <button className="accion-doblar" disabled={!puedeDoblar} onClick={doblar}><span><IconoBj tipo="doblar" /></span>Doblar</button>
               </div>
             ) : (
               <div className="bj-actionbar solo">
-                <button className="accion-repartir" disabled={saldo < minBet} onClick={repartir}><span aria-hidden>♠</span>Repartir</button>
+                <button className="accion-repartir" disabled={saldo < minBet} onClick={repartir}><span><IconoBj tipo="repartir" /></span>Repartir</button>
               </div>
             )}
           </div>

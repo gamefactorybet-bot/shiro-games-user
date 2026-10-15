@@ -1,20 +1,39 @@
 import { cfgConDefaults } from '../../motor/blackjack.js';
 import type { BlackjackCfg, TemaBlackjack } from '../types.ts';
 
-export const TEMAS_BLACKJACK: { id: TemaBlackjack; nombre: string; subtitulo: string; colores: [string, string] }[] = [
-  { id: 'noche', nombre: 'Royal Emerald', subtitulo: 'Esmeralda y oro', colores: ['#0d4934', '#d8b76b'] },
-  { id: 'burdeos', nombre: 'Burgundy Velvet', subtitulo: 'Terciopelo y latón', colores: ['#551527', '#e0b978'] },
-  { id: 'carbon', nombre: 'Midnight Gold', subtitulo: 'Carbón y champagne', colores: ['#171a20', '#cdb78e'] },
-  { id: 'caoba', nombre: 'Obsidian Copper', subtitulo: 'Caoba y cobre', colores: ['#3a1b0c', '#df914d'] },
-  { id: 'zafiro', nombre: 'Sapphire Club', subtitulo: 'Zafiro y plata', colores: ['#112b59', '#cedbec'] },
-  { id: 'monaco', nombre: 'Monaco Ivory', subtitulo: 'Marfil y champagne', colores: ['#d7c9ad', '#a67b38'] },
-  { id: 'artdeco', nombre: 'Art Déco', subtitulo: 'Ébano geométrico', colores: ['#11100f', '#e5c268'] },
-  { id: 'neon', nombre: 'Tokyo Neon', subtitulo: 'Índigo y magenta', colores: ['#10133c', '#f05cff'] },
-  { id: 'artico', nombre: 'Arctic Glass', subtitulo: 'Cristal y hielo', colores: ['#d9eef4', '#64bace'] },
-  { id: 'imperial', nombre: 'Imperial Red', subtitulo: 'Rojo y oro antiguo', colores: ['#6e101b', '#e1b55c'] },
-  { id: 'havana', nombre: 'Havana Room', subtitulo: 'Cuero y nogal', colores: ['#354126', '#c68a4b'] },
-  { id: 'perla', nombre: 'Pearl Minimal', subtitulo: 'Perla y grafito', colores: ['#e9e5dc', '#6e716f'] },
+type TemaBlackjackVista = {
+  id: TemaBlackjack;
+  nombre: string;
+  subtitulo: string;
+  colores: [string, string];
+  fondo: string;
+  miniatura: string;
+};
+
+const tema = (id: TemaBlackjack, nombre: string, subtitulo: string, colores: [string, string], archivo: string): TemaBlackjackVista => ({
+  id, nombre, subtitulo, colores,
+  fondo: `/blackjack/themes/${archivo}.webp`,
+  miniatura: `/blackjack/themes/${archivo}-thumb.webp`,
+});
+
+export const TEMAS_BLACKJACK: TemaBlackjackVista[] = [
+  tema('noche', 'Royal Emerald', 'Casino clásico · todo el año', ['#0d4934', '#d8b76b'], 'royal-emerald'),
+  tema('burdeos', 'Halloween Manor', 'Halloween · octubre', ['#241126', '#dd873d'], 'halloween-manor'),
+  tema('havana', "Saint Patrick’s Vault", 'San Patricio · marzo', ['#145c37', '#d6ad4e'], 'saint-patricks-vault'),
+  tema('monaco', 'Christmas Grand Hall', 'Navidad · diciembre', ['#17402d', '#b92d34'], 'christmas-grand-hall'),
+  tema('carbon', 'New Year Midnight', 'Año Nuevo · medianoche', ['#101116', '#ddb853'], 'new-year-midnight'),
+  tema('imperial', 'Chinese New Year', 'Año Nuevo chino', ['#841521', '#e6b34d'], 'chinese-new-year'),
+  tema('neon', 'Día de Muertos', 'Tradición mexicana · noviembre', ['#075e5c', '#db5d9d'], 'dia-de-muertos'),
+  tema('perla', 'Valentine Noir', 'San Valentín · febrero', ['#6e1628', '#d4a06c'], 'valentine-noir'),
+  tema('artdeco', 'Venetian Carnival', 'Carnaval de Venecia', ['#102d56', '#d5ad58'], 'venetian-carnival'),
+  tema('caoba', 'Oktoberfest Lodge', 'Festival bávaro · septiembre', ['#31513a', '#ba7b35'], 'oktoberfest-lodge'),
+  tema('artico', 'Winter Palace', 'Temporada de invierno', ['#607e9d', '#e2f4ff'], 'winter-palace'),
+  tema('zafiro', 'Summer Riviera', 'Temporada de verano', ['#074d6b', '#d6a34f'], 'summer-riviera'),
 ];
+
+export function fondoTemaBlackjack(id: TemaBlackjack): string {
+  return TEMAS_BLACKJACK.find((t) => t.id === id)?.fondo || TEMAS_BLACKJACK[0].fondo;
+}
 
 // La vista previa guarda la mesa y el formulario guarda reglas y cartas.
 // Las dos escriben `blackjack_cfg` entero: si se cruzan, una pisa a la otra.
