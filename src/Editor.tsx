@@ -2612,6 +2612,19 @@ function SeccionBlackjack({ juego, onCampo }: {
     });
   };
   const cargadas = Object.keys(cfg.cartas || {}).length;
+  const nombreEnJuego = (juego.mostrar_nombre ?? true) !== false;
+  const [mostrarNombre, setMostrarNombre] = useState(nombreEnJuego);
+  const [nombreVisto, setNombreVisto] = useState(nombreEnJuego);
+  if (nombreEnJuego !== nombreVisto) {
+    setNombreVisto(nombreEnJuego);
+    setMostrarNombre(nombreEnJuego);
+  }
+  const cambiarNombre = (v: boolean) => {
+    setMostrarNombre(v);
+    setNombreVisto(v);
+    juego.mostrar_nombre = v;
+    onCampo('mostrar_nombre', v);
+  };
 
   const ponerReverso = async (file: File) => {
     const url = await subirArchivo(file, `blackjack/${juego.id}`);
@@ -2641,6 +2654,7 @@ function SeccionBlackjack({ juego, onCampo }: {
           <label>Soft 17 del crupier<select value={cfg.dealerSoft17} onChange={(e) => guardar({ ...cfg, dealerSoft17: e.target.value as 'plantar' | 'pedir' })}><option value="plantar">Se planta</option><option value="pedir">Pide carta</option></select></label>
           <label style={{ display: 'flex', gap: 8, alignItems: 'center', paddingTop: 22 }}><input type="checkbox" checked={cfg.permitirDoblar} onChange={(e) => guardar({ ...cfg, permitirDoblar: e.target.checked })} /> Permitir doblar</label>
           <label>Temática<select value={cfg.mesa.tema} onChange={(e) => guardar({ ...cfg, mesa: { ...cfg.mesa, tema: e.target.value as typeof cfg.mesa.tema } })}>{TEMAS_BLACKJACK.map((t) => <option key={t.id} value={t.id}>{t.nombre}</option>)}</select></label>
+          <label style={{ display: 'flex', gap: 8, alignItems: 'center', paddingTop: 22 }}><input type="checkbox" checked={mostrarNombre} onChange={(e) => cambiarNombre(e.target.checked)} /> Mostrar el nombre en la mesa</label>
         </div>
         <p className="hint" style={{ margin: '12px 0 0' }}>
           Para mover el paño, las manos, el mazo, el saldo y los botones, y para cambiar el tamaño, abrí <b>Vista previa → ⚙ Ajustar</b>.

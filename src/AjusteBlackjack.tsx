@@ -65,7 +65,7 @@ export function AjusteBlackjack({ juego, mesa, onChange, elem, onElem, onGuardad
 
       <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, marginBottom: 12 }}>
         <input type="checkbox" checked={mostrarNombre} onChange={(e) => onMostrarNombre(e.target.checked)} />
-        Mostrar el nombre
+        Mostrar el nombre en la mesa
       </label>
 
       <div className="grupo-nav" style={{ marginBottom: 10 }}>

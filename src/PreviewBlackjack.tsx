@@ -36,7 +36,13 @@ export function PreviewBlackjack({ juego, onClose, onMesa, onMostrarNombre }: {
 }) {
   const cfg = useMemo(() => cfgBlackjack(juego.blackjack_cfg), [juego]);
   const [mesa, setMesa] = useState<DisenoBlackjack>(() => cfgBlackjack(juego.blackjack_cfg).mesa);
-  const [mostrarNombre, setMostrarNombre] = useState((juego.mostrar_nombre ?? true) !== false);
+  const nombreEnJuego = (juego.mostrar_nombre ?? true) !== false;
+  const [mostrarNombre, setMostrarNombre] = useState(nombreEnJuego);
+  const [nombreVisto, setNombreVisto] = useState(nombreEnJuego);
+  if (nombreEnJuego !== nombreVisto) {
+    setNombreVisto(nombreEnJuego);
+    setMostrarNombre(nombreEnJuego);
+  }
   const [mostrarPanel, setMostrarPanel] = useState(false);
   const [elem, setElem] = useState<AjusteBlackjackElem>('crupier');
   const [host, setHost] = useState<HTMLElement | null>(null);
@@ -156,7 +162,7 @@ export function PreviewBlackjack({ juego, onClose, onMesa, onMostrarNombre }: {
             onElem={setElem}
             onGuardada={onMesa}
             mostrarNombre={mostrarNombre}
-            onMostrarNombre={(v) => { setMostrarNombre(v); onMostrarNombre?.(v); }}
+            onMostrarNombre={(v) => { setMostrarNombre(v); setNombreVisto(v); onMostrarNombre?.(v); }}
           />
         </div>
       )}
