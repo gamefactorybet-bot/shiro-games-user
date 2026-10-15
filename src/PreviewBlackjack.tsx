@@ -232,6 +232,7 @@ export function PreviewBlackjack({ juego, onClose, onMesa, onMostrarNombre }: {
           juego={juego}
           host={host}
           fichas={fichas}
+          tema={mesa.tema}
           apuesta={apuesta}
           onElegir={setApuesta}
           bloqueado={!!activa}

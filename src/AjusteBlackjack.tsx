@@ -73,7 +73,10 @@ export function AjusteBlackjack({ juego, mesa, onChange, elem, onElem, onGuardad
           <button key={t.id} type="button" className={mesa.tema === t.id ? 'on' : ''}
             style={{ padding: 5, textAlign: 'left', borderColor: mesa.tema === t.id ? 'var(--accent)' : undefined }}
             onClick={() => onChange({ ...mesa, tema: t.id })}>
-            <span style={{ display: 'block', height: 66, borderRadius: 6, overflow: 'hidden', marginBottom: 5, background: `center 42%/cover no-repeat url("${t.miniatura}")` }} />
+            <span style={{ display: 'block', position: 'relative', height: 66, borderRadius: 6, overflow: 'hidden', marginBottom: 5, background: `center 42%/cover no-repeat url("${t.miniatura}")` }}>
+              <img src={t.dorso} alt="" loading="lazy" style={{ position: 'absolute', left: 4, bottom: 4, width: 18, height: 27, objectFit: 'contain', filter: 'drop-shadow(0 2px 2px #000)' }} />
+              <img src={t.ficha} alt="" loading="lazy" style={{ position: 'absolute', right: 3, bottom: 3, width: 28, height: 28, objectFit: 'contain', filter: 'drop-shadow(0 2px 2px #000)' }} />
+            </span>
             <small>{t.nombre}</small>
           </button>
         ))}

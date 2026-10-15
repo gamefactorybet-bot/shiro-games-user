@@ -120,6 +120,12 @@ export function Fichas({ host, fichas, apuesta, onElegir, bloqueado, editable, o
           filter:brightness(1.14) drop-shadow(0 0 4px var(--jg-borde, var(--accent))) drop-shadow(0 0 11px var(--jg-borde, var(--accent)));
         }
         .gw-ficha.on .gw-ficha-val { color:var(--accent); }
+        .gw-ficha.tematica .gw-ficha-val {
+          top:50%; bottom:auto; transform:translate(-50%,-50%); z-index:2;
+          max-width:72%; overflow:hidden; text-overflow:clip; padding:2px 4px;
+          color:#fff8df; background:rgba(5,7,8,.62); border:1px solid rgba(255,255,255,.2);
+          font-size:9px; line-height:1; text-shadow:0 1px 2px #000;
+        }
         .gw-ficha.edit { outline:1px dashed rgba(255,255,255,.35); outline-offset:3px; }
         @media (prefers-reduced-motion: reduce){ .gw-ficha, .gw-ficha.on { transition:none } }
       `}</style>
@@ -130,7 +136,7 @@ export function Fichas({ host, fichas, apuesta, onElegir, bloqueado, editable, o
         return (
           <button
             key={i}
-            className={`gw-ficha ${conImg ? 'con-img' : ''} ${marcada ? 'on' : ''} ${editable ? 'edit' : ''}`}
+            className={`gw-ficha ${conImg ? 'con-img' : ''} ${marcada ? 'on' : ''} ${editable ? 'edit' : ''} ${f.tematica ? 'tematica' : ''}`}
             style={{
               left: `${f.x}%`, top: `${f.y}%`,
               width: conImg ? 'auto' : f.tam, height: conImg ? 'auto' : f.tam,
@@ -420,6 +426,7 @@ function Columna({ fichas, apuesta, onElegir, bloqueado, editable, onMover, host
           font-family:var(--mono, monospace); font-size:10px; font-weight:600; color:var(--text-dim,#8a93a1);
           background:rgba(0,0,0,.55); padding:1px 6px; border-radius:5px; white-space:nowrap;
         }
+        .tematica .gw-abanico-val{bottom:auto;top:50%;transform:translate(-50%,-50%);z-index:2;color:#fff8df;background:rgba(5,7,8,.62);border:1px solid rgba(255,255,255,.2);font-size:9px;text-shadow:0 1px 2px #000}
       `}</style>
       {abierto && <div className="gw-columna-velo" onClick={() => setAbierto(false)} />}
       <div style={{ position: 'relative' }}>
@@ -428,7 +435,7 @@ function Columna({ fichas, apuesta, onElegir, bloqueado, editable, onMover, host
             <button
               key={`${f.valor}-${i}`}
               type="button"
-              className={`gw-columna-item${f.imagen_url ? ' con-img' : ''}`}
+              className={`gw-columna-item${f.imagen_url ? ' con-img' : ''}${f.tematica ? ' tematica' : ''}`}
               aria-label={fmt(f.valor)}
               onPointerDownCapture={f.imagen_url ? huecoFicha : undefined}
               style={{
@@ -449,7 +456,7 @@ function Columna({ fichas, apuesta, onElegir, bloqueado, editable, onMover, host
         </div>
         <button
           type="button"
-          className={`gw-columna-principal${activa.imagen_url ? ' con-img' : ''}`}
+          className={`gw-columna-principal${activa.imagen_url ? ' con-img' : ''}${activa.tematica ? ' tematica' : ''}`}
           aria-expanded={abierto}
           aria-label={`Ficha activa: ${fmt(activa.valor)}. Tocar para ver las demás.`}
           disabled={bloqueado && !editable}
@@ -584,6 +591,7 @@ function Abanico({ fichas, apuesta, onElegir, bloqueado, ancho = 320, editable, 
           font-family:var(--mono, monospace); font-size:10px; font-weight:600; color:var(--text-dim,#8a93a1);
           background:rgba(0,0,0,.55); padding:1px 6px; border-radius:5px; white-space:nowrap;
         }
+        .gw-abanico-ficha.tematica .gw-abanico-val{bottom:auto;top:50%;transform:translate(-50%,-50%);z-index:2;color:#fff8df;background:rgba(5,7,8,.62);border:1px solid rgba(255,255,255,.2);font-size:9px;text-shadow:0 1px 2px #000}
         @media (prefers-reduced-motion: reduce){ .gw-abanico-ficha { transition:none } }
       `}</style>
 
@@ -591,7 +599,7 @@ function Abanico({ fichas, apuesta, onElegir, bloqueado, ancho = 320, editable, 
 
       <button
         type="button"
-        className={`gw-abanico-ficha gw-abanico-principal${activa.imagen_url ? ' con-img' : ''}`}
+        className={`gw-abanico-ficha gw-abanico-principal${activa.imagen_url ? ' con-img' : ''}${activa.tematica ? ' tematica' : ''}`}
         aria-haspopup="true" aria-expanded={abierto}
         aria-label={`Ficha activa: ${fmt(activa.valor)}. Tocar para elegir otra.`}
         disabled={bloqueado && !editable}
@@ -619,7 +627,7 @@ function Abanico({ fichas, apuesta, onElegir, bloqueado, ancho = 320, editable, 
           <button
             key={`${f.valor}-${k}`}
             type="button"
-            className={`gw-abanico-ficha gw-abanico-secundaria${f.imagen_url ? ' con-img' : ''}`}
+            className={`gw-abanico-ficha gw-abanico-secundaria${f.imagen_url ? ' con-img' : ''}${f.tematica ? ' tematica' : ''}`}
             aria-label={fmt(f.valor)}
             onPointerDownCapture={f.imagen_url ? huecoFicha : undefined}
             style={{

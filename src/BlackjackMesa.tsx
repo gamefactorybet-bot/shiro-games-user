@@ -1,13 +1,13 @@
 import { useEffect, useLayoutEffect, useRef, useState, type AnimationEvent as ReactAnimationEvent, type CSSProperties, type PointerEvent as ReactPointerEvent, type ReactNode, type Ref } from 'react';
 import { nombreProveedor } from './marca.ts';
-import { claveCarta, fondoTemaBlackjack } from './juego/blackjack.ts';
+import { claveCarta, dorsoTemaBlackjack, fichaTemaBlackjack, fondoTemaBlackjack } from './juego/blackjack.ts';
 import { Fichas } from './Fichas.tsx';
 import { fichasDe, fichasVistaDe } from '../motor/fichas.js';
 import { valor } from '../motor/blackjack.js';
-import type { AjusteBlackjackElem, BlackjackCfg, DisenoBlackjack, Ficha, Juego, PiezaBlackjack } from './types.ts';
+import type { AjusteBlackjackElem, BlackjackCfg, DisenoBlackjack, Ficha, Juego, PiezaBlackjack, TemaBlackjack } from './types.ts';
 
 export type CartaBj = { rango: string; palo: string } | null;
-type PielBj = Pick<BlackjackCfg, 'fondoUrl' | 'reversoUrl' | 'cartas'>;
+type PielBj = Pick<BlackjackCfg, 'fondoUrl' | 'reversoUrl' | 'cartas'> & { tema: TemaBlackjack };
 
 const roja = (palo?: string) => palo === '♥' || palo === '♦';
 
@@ -43,7 +43,7 @@ function Reverso({ piel, clase = '', estilo, ancla, alVolar }: {
 }) {
   return piel.reversoUrl
     ? <div ref={ancla} className={`bj-carta bj-foto bj-dorso ${clase}`} style={{ ...estilo, backgroundImage: `url("${piel.reversoUrl}")` }} onAnimationEnd={alVolar} />
-    : <div ref={ancla} className={`bj-carta bj-oculta bj-dorso ${clase}`} style={estilo} aria-hidden onAnimationEnd={alVolar}><i /></div>;
+    : <div ref={ancla} className={`bj-carta bj-foto bj-dorso bj-dorso-tema ${clase}`} style={{ ...estilo, backgroundImage: `url("${dorsoTemaBlackjack(piel.tema)}")` }} aria-hidden onAnimationEnd={alVolar} />;
 }
 
 function Cara({ carta, piel, clase = '', estilo, ancla, alVolar }: {
@@ -56,8 +56,9 @@ function Cara({ carta, piel, clase = '', estilo, ancla, alVolar }: {
 }) {
   const foto = piel.cartas[claveCarta(carta.rango, carta.palo)];
   if (foto) return <div ref={ancla} className={`bj-carta bj-foto bj-frente ${clase}`} style={{ ...estilo, backgroundImage: `url("${foto}")` }} onAnimationEnd={alVolar} />;
+  const figura = ['J', 'Q', 'K'].includes(carta.rango);
   return (
-    <div ref={ancla} className={`bj-carta bj-frente ${roja(carta.palo) ? 'roja' : ''} ${clase}`} style={estilo} onAnimationEnd={alVolar}>
+    <div ref={ancla} className={`bj-carta bj-frente ${figura ? 'figura' : ''} ${roja(carta.palo) ? 'roja' : ''} ${clase}`} style={estilo} onAnimationEnd={alVolar}>
       <span className="bj-indice"><b>{carta.rango}</b><i>{carta.palo}</i></span>
       <span className="bj-palo-central">{carta.palo}</span>
       <span className="bj-indice invertido"><b>{carta.rango}</b><i>{carta.palo}</i></span>
@@ -347,7 +348,9 @@ export function MesaBlackjack({
     '--bj-carta-h': `${mesa.cartaAlto}px`,
     '--bj-ambiente': `${Math.max(0, Math.min(100, ambiente)) / 100}`,
     '--bj-velocidad': movimiento === 'rapido' ? '.46s' : movimiento === 'reducido' ? '.01s' : '.78s',
+    '--bj-dorso-tema': `url("${dorsoTemaBlackjack(mesa.tema)}")`,
   } as CSSProperties;
+  const pielMesa: PielBj = { ...piel, tema: mesa.tema };
 
   return (
     <main ref={anclaRef} className={`blackjack tema-${mesa.tema} mov-${movimiento}${demo ? ' demo' : ''}${resultado && resultado !== 'en_curso' ? ` resultado-${resultado}` : ''}`} style={vars} aria-busy={enCurso}>
@@ -395,9 +398,7 @@ export function MesaBlackjack({
       <div className={`bj-zona${marca('mazo')}`} style={estiloZona(mesa.mazo)} {...arrastre('mazo')}>
         <div className={`bj-mazo${vista.d.length + vista.j.length ? ' sale' : ''}`} key={vista.d.length + vista.j.length} aria-hidden>
           {[0, 1, 2].map((n) => (
-            piel.reversoUrl
-              ? <i key={n} className="bj-foto" style={{ backgroundImage: `url("${piel.reversoUrl}")` }} />
-              : <i key={n} />
+            <i key={n} className="bj-foto" style={{ backgroundImage: `url("${piel.reversoUrl || dorsoTemaBlackjack(mesa.tema)}")` }} />
           ))}
         </div>
       </div>
@@ -407,7 +408,7 @@ export function MesaBlackjack({
         <div className="bj-mano dealer">
           {vista.d.map((c, i) => (
             <div className="bj-pos-carta" style={estiloAbanico(i, vista.d.length, false)} key={`d-${i}-${firmaCarta(c)}`}>
-              <CartaVista carta={c} oculta={!c} piel={piel} clase={fx.dealer[i]?.clase} delay={fx.dealer[i]?.delay} />
+              <CartaVista carta={c} oculta={!c} piel={pielMesa} clase={fx.dealer[i]?.clase} delay={fx.dealer[i]?.delay} />
             </div>
           ))}
         </div>
@@ -423,7 +424,7 @@ export function MesaBlackjack({
         <div className="bj-mano jugador">
           {vista.j.map((c, i) => (
             <div className="bj-pos-carta" style={estiloAbanico(i, vista.j.length, true)} key={`j-${i}-${firmaCarta(c)}`}>
-              <CartaVista carta={c} piel={piel} clase={fx.jugador[i]?.clase} delay={fx.jugador[i]?.delay} />
+              <CartaVista carta={c} piel={pielMesa} clase={fx.jugador[i]?.clase} delay={fx.jugador[i]?.delay} />
             </div>
           ))}
         </div>
@@ -683,17 +684,21 @@ const ESTILOS = `
   color:#1a140f;
   border:1px solid rgba(255,255,255,.86);box-shadow:0 10px 17px rgba(0,0,0,.48),inset 0 0 0 1px rgba(40,30,18,.1),inset 0 0 22px rgba(165,139,91,.09);
 }
+.bj-frente:not(.bj-foto)::before{content:"";position:absolute;inset:3px;z-index:0;border:1px solid color-mix(in srgb,var(--bj-oro) 58%,transparent);border-radius:6px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.55);pointer-events:none}
+.bj-frente.figura:not(.bj-foto)::after{content:"";position:absolute;inset:17% 18%;z-index:0;border-radius:5px;background:var(--bj-dorso-tema) center/cover no-repeat;opacity:.17;filter:saturate(.82) contrast(1.08);box-shadow:0 0 0 1px color-mix(in srgb,var(--bj-oro) 45%,transparent)}
+.bj-dorso-tema{padding:0;background-color:#120f0b;background-position:center;background-size:100% 100%;background-repeat:no-repeat;border-color:color-mix(in srgb,var(--bj-oro) 70%,#fff);box-shadow:0 11px 19px rgba(0,0,0,.5),0 0 0 1px rgba(0,0,0,.5),inset 0 0 10px rgba(255,255,255,.08)}
 .bj-flip{
   width:var(--bj-carta-w);height:var(--bj-carta-h);position:relative;flex:0 0 auto;transform-style:preserve-3d;
   animation:bj-voltea .72s ease both;
 }
 .bj-flip .bj-carta{position:absolute;inset:0;width:100%;height:100%;margin:0;backface-visibility:hidden}
 .bj-flip .bj-frente{transform:rotateY(180deg)}
-.bj-indice{position:absolute;left:6px;top:5px;display:flex;flex-direction:column;align-items:center;line-height:.78}
+.bj-indice{position:absolute;left:6px;top:5px;z-index:2;display:flex;flex-direction:column;align-items:center;line-height:.78}
 .bj-indice b{font-size:calc(var(--bj-carta-h) * .15);line-height:.9;letter-spacing:-.08em}
 .bj-indice i{font-size:calc(var(--bj-carta-h) * .105);font-style:normal;line-height:1}
 .bj-indice.invertido{left:auto;top:auto;right:6px;bottom:5px;transform:rotate(180deg)}
-.bj-palo-central{position:absolute;inset:0;display:grid;place-items:center;font-size:calc(var(--bj-carta-h) * .32);line-height:1;filter:drop-shadow(0 1px 0 #fff);opacity:.92}
+.bj-palo-central{position:absolute;inset:0;z-index:1;display:grid;place-items:center;font-size:calc(var(--bj-carta-h) * .32);line-height:1;filter:drop-shadow(0 1px 0 #fff);opacity:.92}
+.bj-frente.figura .bj-palo-central{font-size:calc(var(--bj-carta-h) * .2);transform:translateY(22%);text-shadow:0 1px 0 #fff}
 .bj-carta.roja{color:var(--bj-rojo)}
 .bj-carta.entra{
   --bj-dx:18vw;--bj-dy:-16vh;--bj-escala:.72;--bj-giro:12deg;
@@ -818,7 +823,7 @@ const ESTILOS = `
 
 /** Fichas sobre la mesa del 21. Fila, abanico y columna usan el mismo ancla. */
 export function FichasEnMesa({
-  juego, host, apuesta, onElegir, bloqueado, editable, onMover, fichas,
+  juego, host, apuesta, onElegir, bloqueado, editable, onMover, fichas, tema,
 }: {
   juego: Juego;
   host: HTMLElement | null;
@@ -828,8 +833,12 @@ export function FichasEnMesa({
   editable?: boolean;
   onMover?: (i: number, x: number, y: number) => void;
   fichas?: Ficha[];
+  tema?: TemaBlackjack;
 }) {
   const lista = fichas ?? (fichasDe(juego) as Ficha[]);
+  const listaTematica = tema
+    ? lista.map((f) => (f.imagen_url ? f : { ...f, imagen_url: fichaTemaBlackjack(tema), imgTam: 100, tematica: true }))
+    : lista;
   const vista = fichasVistaDe(juego) as {
     modo: 'fila' | 'abanico' | 'columna';
     abanicoApertura: number;
@@ -837,11 +846,11 @@ export function FichasEnMesa({
     abanicoOrden?: 'lista' | 'valor' | 'valor-inv';
     abanicoSale?: 'izquierda' | 'centro' | 'derecha';
   };
-  if (!host || !lista.length) return null;
+  if (!host || !listaTematica.length) return null;
   return (
     <Fichas
       host={host}
-      fichas={lista}
+      fichas={listaTematica}
       apuesta={apuesta}
       onElegir={onElegir}
       bloqueado={bloqueado}

@@ -1104,6 +1104,8 @@ export interface Ficha {
   tam: number;
   /** Tamaño de la imagen dentro del botón, en % (30–100). */
   imgTam: number;
+  /** Apariencia incorporada por un motor; no se persiste en la configuración. */
+  tematica?: boolean;
 }
 
 export interface FichasCfg {

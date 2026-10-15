@@ -8,12 +8,16 @@ type TemaBlackjackVista = {
   colores: [string, string];
   fondo: string;
   miniatura: string;
+  dorso: string;
+  ficha: string;
 };
 
 const tema = (id: TemaBlackjack, nombre: string, subtitulo: string, colores: [string, string], archivo: string): TemaBlackjackVista => ({
   id, nombre, subtitulo, colores,
   fondo: `/blackjack/themes/${archivo}.webp`,
   miniatura: `/blackjack/themes/${archivo}-thumb.webp`,
+  dorso: `/blackjack/skins/cards/${archivo}.webp`,
+  ficha: `/blackjack/skins/chips/${archivo}.webp`,
 });
 
 export const TEMAS_BLACKJACK: TemaBlackjackVista[] = [
@@ -45,6 +49,14 @@ export const TEMAS_BLACKJACK: TemaBlackjackVista[] = [
 
 export function fondoTemaBlackjack(id: TemaBlackjack): string {
   return TEMAS_BLACKJACK.find((t) => t.id === id)?.fondo || TEMAS_BLACKJACK[0].fondo;
+}
+
+export function dorsoTemaBlackjack(id: TemaBlackjack): string {
+  return TEMAS_BLACKJACK.find((t) => t.id === id)?.dorso || TEMAS_BLACKJACK[0].dorso;
+}
+
+export function fichaTemaBlackjack(id: TemaBlackjack): string {
+  return TEMAS_BLACKJACK.find((t) => t.id === id)?.ficha || TEMAS_BLACKJACK[0].ficha;
 }
 
 // La vista previa guarda la mesa y el formulario guarda reglas y cartas.

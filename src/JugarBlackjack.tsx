@@ -106,7 +106,7 @@ export function JugarBlackjack({ datos, saldoInicial, slug, token }: { datos: Da
         </div>
       )}
     >
-      <FichasEnMesa juego={juego} host={host} fichas={fichas} apuesta={apuesta} onElegir={setApuesta} bloqueado={!!activa || cargando} />
+      <FichasEnMesa juego={juego} host={host} fichas={fichas} tema={piel.mesa.tema} apuesta={apuesta} onElegir={setApuesta} bloqueado={!!activa || cargando} />
     </MesaBlackjack>
   );
 }

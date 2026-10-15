@@ -2710,7 +2710,10 @@ function SeccionBlackjack({ juego, onCampo }: {
             {TEMAS_BLACKJACK.map((t) => (
               <button key={t.id} type="button" onClick={() => guardar({ ...cfg, mesa: { ...cfg.mesa, tema: t.id } })}
                 style={{ textAlign: 'left', padding: 7, borderRadius: 12, overflow: 'hidden', border: cfg.mesa.tema === t.id ? '1px solid var(--accent)' : '1px solid var(--border)', background: cfg.mesa.tema === t.id ? 'var(--accent-soft)' : 'var(--surface-alt)', boxShadow: cfg.mesa.tema === t.id ? '0 0 0 2px color-mix(in srgb,var(--accent) 18%,transparent)' : undefined }}>
-                <span style={{ display: 'block', height: 94, borderRadius: 8, overflow: 'hidden', marginBottom: 8, background: `center 42%/cover no-repeat url("${t.miniatura}")`, boxShadow: 'inset 0 0 0 1px rgba(255,255,255,.14)' }} />
+                <span style={{ display: 'block', position: 'relative', height: 94, borderRadius: 8, overflow: 'hidden', marginBottom: 8, background: `center 42%/cover no-repeat url("${t.miniatura}")`, boxShadow: 'inset 0 0 0 1px rgba(255,255,255,.14)' }}>
+                  <img src={t.dorso} alt="" loading="lazy" style={{ position: 'absolute', left: 7, bottom: 6, width: 24, height: 36, objectFit: 'contain', filter: 'drop-shadow(0 3px 3px rgba(0,0,0,.7))' }} />
+                  <img src={t.ficha} alt="" loading="lazy" style={{ position: 'absolute', right: 5, bottom: 4, width: 38, height: 38, objectFit: 'contain', filter: 'drop-shadow(0 3px 3px rgba(0,0,0,.7))' }} />
+                </span>
                 <b style={{ display: 'block', fontSize: 12 }}>{t.nombre}</b><small className="hint">{t.subtitulo}</small>
               </button>
             ))}
@@ -2724,22 +2727,21 @@ function SeccionBlackjack({ juego, onCampo }: {
       <div className="card">
         <h3 style={{ marginTop: 0 }}>Cartas</h3>
         <p className="hint">
-          No es obligatorio. Sin imagen, la carta se dibuja sola. El reverso es uno solo para todo el mazo.
-          Las caras se cargan de a una. Llevás {cargadas} de 52.
+          Sin imágenes personalizadas, las cartas usan automáticamente el marco y el dorso del tema activo.
+          También podés reemplazar cualquier cara de forma individual. Llevás {cargadas} de 52.
         </p>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 18 }}>
           <label style={{
             width: 64, height: 92, borderRadius: 8, border: '1px dashed var(--border)',
-            background: cfg.reversoUrl ? `center/contain no-repeat url("${cfg.reversoUrl}")` : 'var(--surface-alt)',
+            background: `center/contain no-repeat url("${cfg.reversoUrl || TEMAS_BLACKJACK.find((t) => t.id === cfg.mesa.tema)?.dorso || TEMAS_BLACKJACK[0].dorso}")`,
             display: 'grid', placeItems: 'center', cursor: 'pointer', flexShrink: 0, color: 'var(--text-dim)', fontSize: 11,
           }}>
-            {!cfg.reversoUrl && 'Reverso'}
             <input type="file" accept="image/*" hidden onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ''; if (f) ponerReverso(f); }} />
           </label>
           <div>
             <b style={{ fontSize: 13 }}>Reverso</b>
-            <p className="hint" style={{ margin: '2px 0 6px' }}>{cfg.reversoUrl ? 'Cargado. Clic en la carta para cambiarlo.' : 'Una imagen para todas las cartas boca abajo.'}</p>
+            <p className="hint" style={{ margin: '2px 0 6px' }}>{cfg.reversoUrl ? 'Personalizado. Clic en la carta para cambiarlo.' : 'Usando el dorso incluido con el tema seleccionado.'}</p>
             {cfg.reversoUrl && <button style={{ fontSize: 11 }} onClick={() => guardar({ ...cfg, reversoUrl: null })}>Quitar reverso</button>}
           </div>
         </div>
