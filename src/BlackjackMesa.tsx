@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent, type ReactNode, type Ref } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, type AnimationEvent as ReactAnimationEvent, type CSSProperties, type PointerEvent as ReactPointerEvent, type ReactNode, type Ref } from 'react';
 import { nombreProveedor } from './marca.ts';
 import { claveCarta } from './juego/blackjack.ts';
 import { Fichas } from './Fichas.tsx';
@@ -11,26 +11,50 @@ type PielBj = Pick<BlackjackCfg, 'reversoUrl' | 'cartas'>;
 
 const roja = (palo?: string) => palo === '♥' || palo === '♦';
 
-function Reverso({ piel, clase = '', estilo }: { piel: PielBj; clase?: string; estilo?: CSSProperties }) {
+function Reverso({ piel, clase = '', estilo, ancla, alVolar }: {
+  piel: PielBj; clase?: string; estilo?: CSSProperties; ancla?: Ref<HTMLDivElement>;
+  alVolar?: (e: ReactAnimationEvent<HTMLDivElement>) => void;
+}) {
   return piel.reversoUrl
-    ? <div className={`bj-carta bj-foto bj-dorso ${clase}`} style={{ ...estilo, backgroundImage: `url("${piel.reversoUrl}")` }} />
-    : <div className={`bj-carta bj-oculta bj-dorso ${clase}`} style={estilo} aria-hidden><i /></div>;
+    ? <div ref={ancla} className={`bj-carta bj-foto bj-dorso ${clase}`} style={{ ...estilo, backgroundImage: `url("${piel.reversoUrl}")` }} onAnimationEnd={alVolar} />
+    : <div ref={ancla} className={`bj-carta bj-oculta bj-dorso ${clase}`} style={estilo} aria-hidden onAnimationEnd={alVolar}><i /></div>;
 }
 
-function Cara({ carta, piel, clase = '', estilo }: {
+function Cara({ carta, piel, clase = '', estilo, ancla, alVolar }: {
   carta: { rango: string; palo: string };
   piel: PielBj;
   clase?: string;
   estilo?: CSSProperties;
+  ancla?: Ref<HTMLDivElement>;
+  alVolar?: (e: ReactAnimationEvent<HTMLDivElement>) => void;
 }) {
   const foto = piel.cartas[claveCarta(carta.rango, carta.palo)];
-  if (foto) return <div className={`bj-carta bj-foto bj-frente ${clase}`} style={{ ...estilo, backgroundImage: `url("${foto}")` }} />;
+  if (foto) return <div ref={ancla} className={`bj-carta bj-foto bj-frente ${clase}`} style={{ ...estilo, backgroundImage: `url("${foto}")` }} onAnimationEnd={alVolar} />;
   return (
-    <div className={`bj-carta bj-frente ${roja(carta.palo) ? 'roja' : ''} ${clase}`} style={estilo}>
+    <div ref={ancla} className={`bj-carta bj-frente ${roja(carta.palo) ? 'roja' : ''} ${clase}`} style={estilo} onAnimationEnd={alVolar}>
       <b>{carta.rango}</b>
       <span>{carta.palo}</span>
     </div>
   );
+}
+
+/** Cuánto hay que trasladar la carta, en su propio eje, para que arranque en el centro del mazo. */
+function salidaDelMazo(carta: HTMLElement): CSSProperties | null {
+  const mazo = carta.closest('.blackjack')?.querySelector('.bj-mazo');
+  if (!(mazo instanceof HTMLElement)) return null;
+  const destino = carta.getBoundingClientRect();
+  const origen = mazo.getBoundingClientRect();
+  if (!destino.width || !destino.height || !origen.width) return null;
+  const zona = carta.closest('.bj-zona');
+  const escala = zona instanceof HTMLElement && zona.offsetWidth
+    ? zona.getBoundingClientRect().width / zona.offsetWidth
+    : 1;
+  const s = escala || 1;
+  return {
+    '--bj-dx': `${((origen.left + origen.width / 2) - (destino.left + destino.width / 2)) / s}px`,
+    '--bj-dy': `${((origen.top + origen.height / 2) - (destino.top + destino.height / 2)) / s}px`,
+    '--bj-escala': String(Math.max(0.45, Math.min(1, origen.width / destino.width))),
+  } as CSSProperties;
 }
 
 function CartaVista({
@@ -42,7 +66,23 @@ function CartaVista({
   clase?: string;
   delay?: number;
 }) {
-  const estilo = clase ? { animationDelay: `${delay}ms` } : undefined;
+  const ancla = useRef<HTMLDivElement>(null);
+  const [vuelo, setVuelo] = useState<CSSProperties | null>(clase === 'entra' ? null : {});
+  const [volo, setVolo] = useState(clase !== 'entra');
+  useLayoutEffect(() => {
+    if (clase !== 'entra' || volo) return;
+    const el = ancla.current;
+    const quieto = !!el?.closest('.mov-reducido') || window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (!el || quieto) { setVuelo({}); setVolo(true); return; }
+    setVuelo(salidaDelMazo(el) ?? {});
+  }, [clase, volo]);
+  const estilo: CSSProperties | undefined = clase && !volo
+    ? { animationDelay: `${delay}ms`, ...(vuelo ?? {}) }
+    : undefined;
+  const claseVista = clase !== 'entra' || volo ? '' : !vuelo ? 'entra espera' : 'entra';
+  const alVolar = (e: ReactAnimationEvent<HTMLDivElement>) => {
+    if (e.animationName === 'bj-reparte') setVolo(true);
+  };
   if (clase === 'voltea' && carta) {
     return (
       <div className="bj-flip" style={estilo}>
@@ -51,8 +91,8 @@ function CartaVista({
       </div>
     );
   }
-  if (oculta || !carta) return <Reverso piel={piel} clase={clase} estilo={estilo} />;
-  return <Cara carta={carta} piel={piel} clase={clase} estilo={estilo} />;
+  if (oculta || !carta) return <Reverso piel={piel} clase={claseVista} estilo={estilo} ancla={ancla} alVolar={alVolar} />;
+  return <Cara carta={carta} piel={piel} clase={claseVista} estilo={estilo} ancla={ancla} alVolar={alVolar} />;
 }
 
 const firmaCarta = (c: CartaBj) => (c ? `${c.rango}${c.palo}` : 'back');
@@ -295,7 +335,7 @@ export function MesaBlackjack({
       </div>
 
       <div className={`bj-zona${marca('mazo')}`} style={estiloZona(mesa.mazo)} {...arrastre('mazo')}>
-        <div className="bj-mazo" aria-hidden>
+        <div className={`bj-mazo${vista.d.length + vista.j.length ? ' sale' : ''}`} key={vista.d.length + vista.j.length} aria-hidden>
           {[0, 1, 2].map((n) => (
             piel.reversoUrl
               ? <i key={n} className="bj-foto" style={{ backgroundImage: `url("${piel.reversoUrl}")` }} />
@@ -511,10 +551,16 @@ const ESTILOS = `
 .bj-carta b{font-size:calc(var(--bj-carta-h) * .18);line-height:1}
 .bj-carta span{font-size:calc(var(--bj-carta-h) * .24);line-height:.8;align-self:flex-end}
 .bj-carta.roja{color:var(--bj-rojo)}
-.bj-carta.entra{animation:bj-reparte var(--bj-velocidad) cubic-bezier(.16,.84,.28,1) both}
+.bj-carta.entra{
+  --bj-dx:18vw;--bj-dy:-16vh;--bj-escala:.72;--bj-giro:12deg;
+  position:relative;z-index:3;
+  animation:bj-reparte var(--bj-velocidad) cubic-bezier(.22,.7,.2,1) both;
+}
+.bj-carta.entra.espera{opacity:0;animation:none}
+.bj-zona:has(.bj-carta.entra){z-index:7}
 @keyframes bj-reparte{
-  0%{opacity:0;transform:translate(28vw,-24vh) rotate(18deg) scale(.62)}
-  68%{opacity:1;transform:translate(0,8px) rotate(-3deg) scale(1.045)}
+  0%{opacity:1;transform:translate(var(--bj-dx),var(--bj-dy)) rotate(var(--bj-giro)) scale(var(--bj-escala))}
+  55%{opacity:1;transform:translate(calc(var(--bj-dx) * .28), calc(var(--bj-dy) * .28 - 22px)) rotate(4deg) scale(1.02)}
   100%{opacity:1;transform:none}
 }
 @keyframes bj-voltea{
@@ -522,9 +568,10 @@ const ESTILOS = `
   100%{transform:rotateY(180deg)}
 }
 @media (prefers-reduced-motion: reduce){
-  .bj-carta.entra,.bj-flip{animation:none}
+  .bj-carta.entra,.bj-carta.entra.espera,.bj-flip,.bj-mazo.sale{animation:none;opacity:1}
   .bj-flip{transform:rotateY(180deg)}
 }
+.mov-reducido .bj-carta.entra,.mov-reducido .bj-carta.entra.espera,.mov-reducido .bj-mazo.sale{animation:none;opacity:1;transform:none}
 .blackjack .gw-ficha:hover,
 .blackjack .gw-abanico-ficha:hover,
 .blackjack .gw-columna-principal:hover,
@@ -538,6 +585,12 @@ const ESTILOS = `
 .blackjack .gw-ficha:active{transform:translate(-50%,-50%)}
 .blackjack .gw-ficha.on:active{transform:translate(-50%,-50%) scale(1.09)}
 .bj-mazo{position:relative;width:54px;height:76px}
+.bj-mazo.sale{animation:bj-mazo-sale .42s ease}
+@keyframes bj-mazo-sale{
+  0%{transform:none}
+  40%{transform:translate(-7px,5px) rotate(-6deg)}
+  100%{transform:none}
+}
 .bj-mazo i{
   position:absolute;inset:0;border-radius:7px;
   background:
